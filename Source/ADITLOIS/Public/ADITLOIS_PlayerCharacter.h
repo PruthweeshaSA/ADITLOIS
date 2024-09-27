@@ -13,8 +13,9 @@
 
 class USpringArmComponent;
 class UCameraComponent;
-class UActor;
-class UCharacter;
+class AActor;
+class ACharacter;
+class APlayerState;
 
 UCLASS()
 class ADITLOIS_API AADITLOIS_PlayerCharacter : public ACharacter
@@ -43,5 +44,5 @@ public:
 	TObjectPtr<UCameraComponent> camera = nullptr;
 
 	UPROPERTY()
-	TObjectPtr<UActor> interactionTarget = nullptr;
+	TObjectPtr<AActor> interactionTarget = nullptr;
 };

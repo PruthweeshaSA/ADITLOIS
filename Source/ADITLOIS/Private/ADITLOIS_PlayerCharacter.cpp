@@ -2,6 +2,7 @@
 
 #include "ADITLOIS_PlayerCharacter.h"
 #include "UObject/ConstructorHelpers.h"
+#include "GameFramework/PlayerState.h"
 
 // Sets default values
 AADITLOIS_PlayerCharacter::AADITLOIS_PlayerCharacter()
@@ -43,8 +44,29 @@ void AADITLOIS_PlayerCharacter::Tick(float DeltaTime)
 
 	FHitResult Hit;
 
-	FVector start = camera->GetRelativeLocation() + this->GetActorLocation();
-	FVector end = start + (this->GetActorForwardVector() + camera->GetRelativeRotation().Vector()) * 400.0f;
+	FVector start = this->GetActorLocation() + springArm->GetRelativeLocation() + camera->GetRelativeLocation();
+	// FVector end = start + (this->GetActorRotation().Vector() + springArm->GetRelativeRotation().Vector()) * 400.0f;
+
+	TObjectPtr<APlayerController> playerController = Cast<APlayerController>(GetController());
+	FRotator controlRotation = playerController ? playerController->GetControlRotation() : FRotator(0.0);
+	FVector end = start + (controlRotation.Vector()) * 400.0f;
+
+	if (GEngine)
+	{
+		int32 playerId = -1;
+
+		if (playerController)
+		{
+			TObjectPtr<APlayerState> playerState = playerController->PlayerState;
+			if (playerState)
+			{
+				playerId = playerState->GetPlayerId();
+			}
+			FString formattedStartVector = FString::Printf(TEXT("X: %.2f Y: %.2f Z: %.2f"), start.X, start.Y, start.Z);
+			FString formattedEndVector = FString::Printf(TEXT("X: %.2f Y: %.2f Z: %.2f"), end.X, end.Y, end.Z);
+			GEngine->AddOnScreenDebugMessage(playerId, 2.0f, FColor(32, 64, 128), FString::Printf(TEXT("START: %s ----> END: %s"), *formattedStartVector, *formattedEndVector));
+		}
+	}
 }
 
 // Called to bind functionality to input
