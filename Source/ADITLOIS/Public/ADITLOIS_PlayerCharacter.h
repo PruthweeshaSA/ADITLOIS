@@ -4,7 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/Actor.h"
+
+#include "GameFramework/SpringArmComponent.h"
+#include "Camera/CameraComponent.h"
+
 #include "ADITLOIS_PlayerCharacter.generated.h"
+
+class USpringArmComponent;
+class UCameraComponent;
+class UActor;
+class UCharacter;
 
 UCLASS()
 class ADITLOIS_API AADITLOIS_PlayerCharacter : public ACharacter
@@ -20,9 +30,18 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	// // Called every frame
-	// virtual void Tick(float DeltaTime) override;
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent *PlayerInputComponent) override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<USpringArmComponent> springArm = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<UCameraComponent> camera = nullptr;
+
+	UPROPERTY()
+	TObjectPtr<UActor> interactionTarget = nullptr;
 };

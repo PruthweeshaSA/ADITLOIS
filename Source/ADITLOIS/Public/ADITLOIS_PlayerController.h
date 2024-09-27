@@ -10,7 +10,6 @@
 #include "InputMappingContext.h"
 #include "InputAction.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "UObject/ConstructorHelpers.h"
 
 #include "ADITLOIS_PlayerController.generated.h"
 

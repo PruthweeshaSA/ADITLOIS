@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "ADITLOIS_PlayerController.h"
+#include "UObject/ConstructorHelpers.h"
 
 AADITLOIS_PlayerController::AADITLOIS_PlayerController()
 {
