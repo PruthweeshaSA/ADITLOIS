@@ -7,11 +7,15 @@
 #include "ADITLOIS_GameModeBase.generated.h"
 
 /**
- * 
+ *
  */
+
+class AAIController;
+
 UCLASS()
 class ADITLOIS_API AADITLOIS_GameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
-	
+
+	virtual void BeginPlay() override;
 };
