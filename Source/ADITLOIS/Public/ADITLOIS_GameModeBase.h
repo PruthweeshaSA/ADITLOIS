@@ -17,5 +17,11 @@ class ADITLOIS_API AADITLOIS_GameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 
+public:
+	AADITLOIS_GameModeBase();
+
 	virtual void BeginPlay() override;
+
+	UPROPERTY()
+	TSubclassOf<ACharacter> characterClass = nullptr;
 };

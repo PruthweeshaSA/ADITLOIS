@@ -9,7 +9,8 @@
 		"typescript.tsc.autoDetect": "off",
 		"npm.autoDetect": "off",
 		"files.associations": {
-			"valarray": "cpp"
+			"valarray": "cpp",
+			"*.rh": "cpp"
 		}
 	},
 	"extensions": {
