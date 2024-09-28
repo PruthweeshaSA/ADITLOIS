@@ -59,6 +59,10 @@ private:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UInputAction> ActionSprint = nullptr;
 
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UInputAction> ActionInteract = nullptr;
+
+
 public:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<AADITLOIS_PlayerCharacter> playerCharacter = nullptr;
@@ -82,7 +86,9 @@ private:
 	UFUNCTION(Blueprintable)
 	void OnActionSprintRelease(const FInputActionValue &Value);
 
-public:
+	UFUNCTION(Blueprintable)
+	void OnActionInteract(const FInputActionValue &Value);
+
 	UFUNCTION(Server, Reliable, Blueprintable)
 	void ServerOnActionLook(const FInputActionValue &Value);
 
@@ -97,4 +103,7 @@ public:
 
 	UFUNCTION(Server, Reliable, Blueprintable)
 	void ServerOnActionSprintRelease(const FInputActionValue &Value);
+
+	UFUNCTION(Server, Reliable, Blueprintable)
+	void ServerOnActionInteract(const FInputActionValue &Value);
 };

@@ -16,7 +16,7 @@ AADITLOIS_PlayerCharacter::AADITLOIS_PlayerCharacter()
 
 	this->bUseControllerRotationYaw = false;
 
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> skeletalMeshFinder(TEXT("SkeletalMesh'/Game/SkeletalMeshes/SKM_Sherni.SKM_Sherni'"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> skeletalMeshFinder(TEXT("SkeletalMesh'/Game/Assets/SkeletalMeshes/SKM_Sherni.SKM_Sherni'"));
 
 	if (skeletalMeshFinder.Succeeded())
 	{

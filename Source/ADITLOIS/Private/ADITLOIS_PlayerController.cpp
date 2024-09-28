@@ -2,13 +2,14 @@
 
 #include "ADITLOIS_PlayerController.h"
 #include "UObject/ConstructorHelpers.h"
+#include "ADITLOIS_PlayerCharacter.h"
 
 AADITLOIS_PlayerController::AADITLOIS_PlayerController()
 {
     bReplicates = true;
 
     // Use FObjectFinder to find the InputMappingContext
-    static ConstructorHelpers::FObjectFinder<UInputMappingContext> InputMappingContextFinder(TEXT("InputMappingContext'/Game/Inputs/IMC_Locomotion.IMC_Locomotion'"));
+    static ConstructorHelpers::FObjectFinder<UInputMappingContext> InputMappingContextFinder(TEXT("InputMappingContext'/Game/Assets/Inputs/IMC_Locomotion.IMC_Locomotion'"));
     if (InputMappingContextFinder.Succeeded())
     {
         inputMappingContext = InputMappingContextFinder.Object;
@@ -19,7 +20,7 @@ AADITLOIS_PlayerController::AADITLOIS_PlayerController()
         UE_LOG(LogTemp, Error, TEXT("Failed to find Input Mapping Context"));
     }
 
-    static ConstructorHelpers::FObjectFinder<UInputAction> InputActionLookFinder(TEXT("InputAction'/Game/Inputs/IA_Look.IA_Look'"));
+    static ConstructorHelpers::FObjectFinder<UInputAction> InputActionLookFinder(TEXT("InputAction'/Game/Assets/Inputs/IA_Look.IA_Look'"));
     if (InputActionLookFinder.Succeeded())
     {
         ActionLook = InputActionLookFinder.Object;
@@ -30,7 +31,7 @@ AADITLOIS_PlayerController::AADITLOIS_PlayerController()
         UE_LOG(LogTemp, Error, TEXT("Failed to find Input Action Look"));
     }
 
-    static ConstructorHelpers::FObjectFinder<UInputAction> InputActionMoveFinder(TEXT("InputAction'/Game/Inputs/IA_Move.IA_Move'"));
+    static ConstructorHelpers::FObjectFinder<UInputAction> InputActionMoveFinder(TEXT("InputAction'/Game/Assets/Inputs/IA_Move.IA_Move'"));
     if (InputActionMoveFinder.Succeeded())
     {
         ActionMove = InputActionMoveFinder.Object;
@@ -41,7 +42,7 @@ AADITLOIS_PlayerController::AADITLOIS_PlayerController()
         UE_LOG(LogTemp, Error, TEXT("Failed to find Input Action Move"));
     }
 
-    static ConstructorHelpers::FObjectFinder<UInputAction> InputActionJumpFinder(TEXT("InputAction'/Game/Inputs/IA_Jump.IA_Jump'"));
+    static ConstructorHelpers::FObjectFinder<UInputAction> InputActionJumpFinder(TEXT("InputAction'/Game/Assets/Inputs/IA_Jump.IA_Jump'"));
     if (InputActionJumpFinder.Succeeded())
     {
         ActionJump = InputActionJumpFinder.Object;
@@ -52,7 +53,7 @@ AADITLOIS_PlayerController::AADITLOIS_PlayerController()
         UE_LOG(LogTemp, Error, TEXT("Failed to find Input Action Jump"));
     }
 
-    static ConstructorHelpers::FObjectFinder<UInputAction> InputActionSprintFinder(TEXT("InputAction'/Game/Inputs/IA_Sprint.IA_Sprint'"));
+    static ConstructorHelpers::FObjectFinder<UInputAction> InputActionSprintFinder(TEXT("InputAction'/Game/Assets/Inputs/IA_Sprint.IA_Sprint'"));
     if (InputActionSprintFinder.Succeeded())
     {
         ActionSprint = InputActionSprintFinder.Object;
@@ -61,6 +62,17 @@ AADITLOIS_PlayerController::AADITLOIS_PlayerController()
     else
     {
         UE_LOG(LogTemp, Error, TEXT("Failed to find Input Action Sprint"));
+    }
+
+    static ConstructorHelpers::FObjectFinder<UInputAction> InputActionInteractFinder(TEXT("InputAction'/Game/Assets/Inputs/IA_Interact.IA_Interact'"));
+    if (InputActionSprintFinder.Succeeded())
+    {
+        ActionInteract = InputActionInteractFinder.Object;
+        UE_LOG(LogTemp, Log, TEXT("Input Action Interact found: %s"), *ActionInteract->GetName());
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("Failed to find Input Action Interact"));
     }
 }
 
@@ -124,6 +136,11 @@ void AADITLOIS_PlayerController::SetupInputComponent()
     if (ActionSprint)
     {
         enhancedInputComponent->BindAction(ActionSprint, ETriggerEvent::Completed, this, &AADITLOIS_PlayerController::OnActionSprintRelease);
+    }
+
+    if (ActionInteract)
+    {
+        enhancedInputComponent->BindAction(ActionInteract, ETriggerEvent::Triggered, this, &AADITLOIS_PlayerController::OnActionInteract);
     }
 }
 
@@ -211,4 +228,35 @@ void AADITLOIS_PlayerController::OnActionSprintRelease(const FInputActionValue &
 void AADITLOIS_PlayerController::ServerOnActionSprintRelease_Implementation(const FInputActionValue &Value)
 {
     Cast<UCharacterMovementComponent>(Cast<AADITLOIS_PlayerCharacter>(this->GetPawn())->GetMovementComponent())->MaxWalkSpeed = 300.0;
+}
+
+void AADITLOIS_PlayerController::OnActionInteract(const FInputActionValue &Value)
+{
+    if (this->HasAuthority())
+    {
+        if (this->GetPawn())
+        {
+            TObjectPtr<AActor> actorToInteractWith = Cast<AADITLOIS_PlayerCharacter>(this->GetPawn())->interactionTarget;
+            if (actorToInteractWith)
+            {
+                actorToInteractWith->Destroy();
+            }
+        }
+    }
+    else
+    {
+        ServerOnActionInteract(Value);
+    }
+}
+
+void AADITLOIS_PlayerController::ServerOnActionInteract_Implementation(const FInputActionValue &Value)
+{
+    if (this->GetPawn())
+    {
+        TObjectPtr<AActor> actorToInteractWith = Cast<AADITLOIS_PlayerCharacter>(this->GetPawn())->interactionTarget;
+        if (actorToInteractWith && actorToInteractWith->GetIsReplicated())
+        {
+            actorToInteractWith->Destroy();
+        }
+    }
 }
