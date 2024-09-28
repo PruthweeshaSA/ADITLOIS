@@ -3,6 +3,7 @@
 #include "ADITLOIS_PlayerCharacter.h"
 #include "UObject/ConstructorHelpers.h"
 #include "GameFramework/PlayerState.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 AADITLOIS_PlayerCharacter::AADITLOIS_PlayerCharacter()
@@ -42,30 +43,46 @@ void AADITLOIS_PlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	FHitResult Hit;
-
-	FVector start = this->GetActorLocation() + springArm->GetRelativeLocation() + camera->GetRelativeLocation();
-	// FVector end = start + (this->GetActorRotation().Vector() + springArm->GetRelativeRotation().Vector()) * 400.0f;
+	FHitResult hitResult;
+	FVector startPoint;
+	FRotator viewRotation;
+	FVector endPoint;
 
 	TObjectPtr<APlayerController> playerController = Cast<APlayerController>(GetController());
-	FRotator controlRotation = playerController ? playerController->GetControlRotation() : FRotator(0.0);
-	FVector end = start + (controlRotation.Vector()) * 400.0f;
 
-	if (GEngine)
+	// startPoint = this->GetActorLocation() + (springArm ? springArm->GetRelativeLocation() : FVector(0.0f));
+	// startPoint = startPoint + (camera ? camera->GetRelativeLocation() : FVector(0.0f));
+	// viewRotation = playerController ? playerController->GetControlRotation() : FRotator(0.0);
+	// endPoint = startPoint + (viewRotation.Vector()) * (springArm ? springArm->TargetArmLength + 100.0f : 400.0f);
+
+	if (playerController)
 	{
-		int32 playerId = -1;
+		playerController->GetPlayerViewPoint(startPoint, viewRotation);
+	}
 
-		if (playerController)
-		{
-			TObjectPtr<APlayerState> playerState = playerController->PlayerState;
-			if (playerState)
-			{
-				playerId = playerState->GetPlayerId();
-			}
-			FString formattedStartVector = FString::Printf(TEXT("X: %.2f Y: %.2f Z: %.2f"), start.X, start.Y, start.Z);
-			FString formattedEndVector = FString::Printf(TEXT("X: %.2f Y: %.2f Z: %.2f"), end.X, end.Y, end.Z);
-			GEngine->AddOnScreenDebugMessage(playerId, 2.0f, FColor(32, 64, 128), FString::Printf(TEXT("START: %s ----> END: %s"), *formattedStartVector, *formattedEndVector));
-		}
+	endPoint = startPoint + viewRotation.Vector() * 500.0f;
+
+	FCollisionQueryParams TraceParams(FName(TEXT("")), false, this);
+
+	bool bHit = GetWorld()->LineTraceSingleByChannel(hitResult, startPoint, endPoint, ECC_Visibility, TraceParams);
+
+	TObjectPtr<APlayerState> playerState = playerController ? playerController->PlayerState : nullptr;
+
+	// if (GEngine && playerState)
+	// {
+	// 	int32 playerId = playerState->GetPlayerId();
+	// 	FString formattedStartVector = FString::Printf(TEXT("X: %.2f Y: %.2f Z: %.2f"), startPoint.X, startPoint.Y, startPoint.Z);
+	// 	FString formattedEndVector = FString::Printf(TEXT("X: %.2f Y: %.2f Z: %.2f"), endPoint.X, endPoint.Y, endPoint.Z);
+	// 	GEngine->AddOnScreenDebugMessage(playerId, 2.0f, FColor(32, 64, 128), FString::Printf(TEXT("START: %s ----> END: %s"), *formattedStartVector, *formattedEndVector));
+	// }
+
+	interactionTarget = bHit ? hitResult.GetActor() : nullptr;
+
+	if (GEngine && playerState)
+	{
+		int32 playerId = playerState->GetPlayerId();
+		FString hitDebugMessage = interactionTarget ? interactionTarget->GetName() : FString::Printf(TEXT("NullPtr"));
+		GEngine->AddOnScreenDebugMessage(playerId, 1.0f, FColor(0, 192, 64), FString::Printf(TEXT("Interaction Target: %s"), *hitDebugMessage));
 	}
 }
 
@@ -73,4 +90,11 @@ void AADITLOIS_PlayerCharacter::Tick(float DeltaTime)
 void AADITLOIS_PlayerCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+}
+
+void AADITLOIS_PlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AADITLOIS_PlayerCharacter, interactionTarget);
 }

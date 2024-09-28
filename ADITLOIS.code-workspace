@@ -7,7 +7,10 @@
 	],
 	"settings": {
 		"typescript.tsc.autoDetect": "off",
-		"npm.autoDetect": "off"
+		"npm.autoDetect": "off",
+		"files.associations": {
+			"valarray": "cpp"
+		}
 	},
 	"extensions": {
 		"recommendations": [
