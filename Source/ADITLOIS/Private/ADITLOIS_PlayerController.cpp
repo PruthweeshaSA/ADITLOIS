@@ -74,6 +74,17 @@ AADITLOIS_PlayerController::AADITLOIS_PlayerController()
     {
         UE_LOG(LogTemp, Error, TEXT("Failed to find Input Action Interact"));
     }
+
+    static ConstructorHelpers::FObjectFinder<UInputAction> InputActionCameraZoomFinder(TEXT("InputAction'/Game/Assets/Inputs/IA_CameraZoom.IA_CameraZoom'"));
+    if (InputActionCameraZoomFinder.Succeeded())
+    {
+        ActionCameraZoom = InputActionCameraZoomFinder.Object;
+        UE_LOG(LogTemp, Log, TEXT("Input Action Camera Zoom found: %s"), *ActionCameraZoom->GetName());
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("Failed to find Input Action Camera Zoom"));
+    }
 }
 
 void AADITLOIS_PlayerController::BeginPlay()
@@ -141,6 +152,11 @@ void AADITLOIS_PlayerController::SetupInputComponent()
     if (ActionInteract)
     {
         enhancedInputComponent->BindAction(ActionInteract, ETriggerEvent::Triggered, this, &AADITLOIS_PlayerController::OnActionInteract);
+    }
+
+    if (ActionCameraZoom)
+    {
+        enhancedInputComponent->BindAction(ActionCameraZoom, ETriggerEvent::Triggered, this, &AADITLOIS_PlayerController::OnActionCameraZoom);
     }
 }
 
@@ -259,4 +275,36 @@ void AADITLOIS_PlayerController::ServerOnActionInteract_Implementation(const FIn
             actorToInteractWith->Destroy();
         }
     }
+}
+
+void AADITLOIS_PlayerController::OnActionCameraZoom(const FInputActionValue &Value)
+{
+    float move = Value.Get<float>();
+    TObjectPtr<USpringArmComponent> characterSpringArm = Cast<AADITLOIS_PlayerCharacter>(this->GetPawn())->springArm;
+    if (move > 0.0f)
+    {
+        characterSpringArm->TargetArmLength = characterSpringArm->TargetArmLength >= 150.0f ? characterSpringArm->TargetArmLength - 30.0f : 30.0f;
+        if (characterSpringArm->TargetArmLength == 30.0f)
+        {
+            Cast<AADITLOIS_PlayerCharacter>(this->GetPawn())->bUseControllerRotationYaw = true;
+        }
+    }
+    else if (move < 0.0f)
+    {
+        characterSpringArm->TargetArmLength = characterSpringArm->TargetArmLength < 420.0f ? characterSpringArm->TargetArmLength + 30.0f : 450.0f;
+        if (characterSpringArm->TargetArmLength < 120.0f)
+        {
+            characterSpringArm->TargetArmLength = 120.0f;
+        }
+        Cast<AADITLOIS_PlayerCharacter>(this->GetPawn())->bUseControllerRotationYaw = false;
+    }
+    float yOffset = characterSpringArm->TargetArmLength >= 120.0f ? 10.0f + (characterSpringArm->TargetArmLength / 6.0f) : 0.0f;
+    float zOffset = characterSpringArm->TargetArmLength >= 120.0f ? 65.0f : 0.0f;
+    float xRelative = characterSpringArm->TargetArmLength >= 120.0f ? 0.0f : 40.0f;
+    float zRelative = characterSpringArm->TargetArmLength >= 120.0f ? 0.0f : 65.0f;
+    FVector relLocation = characterSpringArm->GetRelativeLocation();
+    relLocation.X = xRelative;
+    relLocation.Z = zRelative;
+    characterSpringArm->SetRelativeLocation(relLocation);
+    characterSpringArm->SocketOffset = FVector(characterSpringArm->SocketOffset.X, yOffset, zOffset);
 }

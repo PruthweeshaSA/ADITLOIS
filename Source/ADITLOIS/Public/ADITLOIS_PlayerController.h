@@ -62,6 +62,8 @@ private:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UInputAction> ActionInteract = nullptr;
 
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UInputAction> ActionCameraZoom = nullptr;
 
 public:
 	UPROPERTY(EditAnywhere)
@@ -88,6 +90,9 @@ private:
 
 	UFUNCTION(Blueprintable)
 	void OnActionInteract(const FInputActionValue &Value);
+
+	UFUNCTION(Blueprintable)
+	void OnActionCameraZoom(const FInputActionValue &Value);
 
 	UFUNCTION(Server, Reliable, Blueprintable)
 	void ServerOnActionLook(const FInputActionValue &Value);

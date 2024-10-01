@@ -45,6 +45,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<UCameraComponent> camera = nullptr;
 
-	UPROPERTY(Replicated)
+	UPROPERTY(Replicated, BlueprintReadWrite)
 	TObjectPtr<AActor> interactionTarget = nullptr;
 };

@@ -60,7 +60,8 @@ void AADITLOIS_PlayerCharacter::Tick(float DeltaTime)
 		playerController->GetPlayerViewPoint(startPoint, viewRotation);
 	}
 
-	endPoint = startPoint + viewRotation.Vector() * 500.0f;
+	startPoint = startPoint + viewRotation.Vector() * (springArm->TargetArmLength);
+	endPoint = startPoint + viewRotation.Vector() * (100.0f);
 
 	FCollisionQueryParams TraceParams(FName(TEXT("")), false, this);
 
