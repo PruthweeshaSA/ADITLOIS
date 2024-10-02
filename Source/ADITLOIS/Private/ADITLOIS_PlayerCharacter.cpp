@@ -3,6 +3,9 @@
 #include "ADITLOIS_PlayerCharacter.h"
 #include "UObject/ConstructorHelpers.h"
 #include "GameFramework/PlayerState.h"
+#include "GameFramework/PawnMovementComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Net/UnrealNetwork.h"
 
 // Sets default values
@@ -11,8 +14,11 @@ AADITLOIS_PlayerCharacter::AADITLOIS_PlayerCharacter()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.TickInterval = 0.1f;
-	bReplicates = true;
-	SetReplicateMovement(true);
+	this->bReplicates = true;
+	this->SetReplicateMovement(true);
+	this->GetMovementComponent()->SetIsReplicated(true);
+	this->GetCapsuleComponent()->SetIsReplicated(true);
+	this->GetMesh()->SetIsReplicated(true);
 
 	this->bUseControllerRotationYaw = false;
 
@@ -30,6 +36,8 @@ AADITLOIS_PlayerCharacter::AADITLOIS_PlayerCharacter()
 	camera->SetupAttachment(springArm);
 	springArm->SocketOffset = FVector(0.0f, 50.0f, 50.0f);
 	springArm->bUsePawnControlRotation = true;
+
+	Cast<UCharacterMovementComponent>(this->GetMovementComponent())->MaxWalkSpeed = 300.0;
 }
 
 // Called when the game starts or when spawned
@@ -98,4 +106,6 @@ void AADITLOIS_PlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimePrope
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AADITLOIS_PlayerCharacter, interactionTarget);
+	DOREPLIFETIME(AADITLOIS_PlayerCharacter, springArm);
+	DOREPLIFETIME(AADITLOIS_PlayerCharacter, camera);
 }

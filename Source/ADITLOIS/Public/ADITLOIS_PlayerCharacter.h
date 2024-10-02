@@ -16,6 +16,9 @@ class UCameraComponent;
 class AActor;
 class ACharacter;
 class APlayerState;
+class UPawnMovementComponent;
+class UCharacterMovementComponent;
+class UCapsuleComponent;
 
 UCLASS()
 class ADITLOIS_API AADITLOIS_PlayerCharacter : public ACharacter
@@ -39,12 +42,12 @@ public:
 
 	void GetLifetimeReplicatedProps(class TArray<FLifetimeProperty> &OutLifetimeProps) const override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<USpringArmComponent> springArm = nullptr;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<UCameraComponent> camera = nullptr;
 
-	UPROPERTY(Replicated, BlueprintReadWrite)
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<AActor> interactionTarget = nullptr;
 };

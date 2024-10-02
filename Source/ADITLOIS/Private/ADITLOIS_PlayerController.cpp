@@ -3,6 +3,7 @@
 #include "ADITLOIS_PlayerController.h"
 #include "UObject/ConstructorHelpers.h"
 #include "ADITLOIS_PlayerCharacter.h"
+#include "GameFramework/Character.h"
 
 AADITLOIS_PlayerController::AADITLOIS_PlayerController()
 {
@@ -176,8 +177,8 @@ void AADITLOIS_PlayerController::ServerOnActionLook_Implementation(const FInputA
     // }
 
     FVector2D look = Value.Get<FVector2D>();
-    this->GetPawn()->AddControllerPitchInput(look.Y);
-    this->GetPawn()->AddControllerYawInput(look.X);
+    this->AddYawInput(look.X);
+    this->AddPitchInput(look.Y);
 }
 
 void AADITLOIS_PlayerController::OnActionMove(const FInputActionValue &Value)
@@ -279,14 +280,20 @@ void AADITLOIS_PlayerController::ServerOnActionInteract_Implementation(const FIn
 
 void AADITLOIS_PlayerController::OnActionCameraZoom(const FInputActionValue &Value)
 {
+    if (this->GetPawn() == nullptr)
+    {
+        return;
+    }
+    TObjectPtr<AADITLOIS_PlayerCharacter> pCharacter = Cast<AADITLOIS_PlayerCharacter>(this->GetPawn());
     float move = Value.Get<float>();
-    TObjectPtr<USpringArmComponent> characterSpringArm = Cast<AADITLOIS_PlayerCharacter>(this->GetPawn())->springArm;
+    TObjectPtr<USpringArmComponent> characterSpringArm = pCharacter->springArm;
     if (move > 0.0f)
     {
-        characterSpringArm->TargetArmLength = characterSpringArm->TargetArmLength >= 150.0f ? characterSpringArm->TargetArmLength - 30.0f : 30.0f;
-        if (characterSpringArm->TargetArmLength == 30.0f)
+        characterSpringArm->TargetArmLength = characterSpringArm->TargetArmLength >= 150.0f ? characterSpringArm->TargetArmLength - 30.0f : 0.0f;
+        if (characterSpringArm->TargetArmLength == 0.0f)
         {
-            Cast<AADITLOIS_PlayerCharacter>(this->GetPawn())->bUseControllerRotationYaw = true;
+            pCharacter->bUseControllerRotationYaw = true;
+            characterSpringArm->AttachToComponent(pCharacter->GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("EyeSocket")));
         }
     }
     else if (move < 0.0f)
@@ -296,15 +303,45 @@ void AADITLOIS_PlayerController::OnActionCameraZoom(const FInputActionValue &Val
         {
             characterSpringArm->TargetArmLength = 120.0f;
         }
-        Cast<AADITLOIS_PlayerCharacter>(this->GetPawn())->bUseControllerRotationYaw = false;
+        pCharacter->bUseControllerRotationYaw = false;
+        characterSpringArm->AttachToComponent(pCharacter->GetRootComponent(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("EyeSocket")));
     }
     float yOffset = characterSpringArm->TargetArmLength >= 120.0f ? 10.0f + (characterSpringArm->TargetArmLength / 6.0f) : 0.0f;
-    float zOffset = characterSpringArm->TargetArmLength >= 120.0f ? 65.0f : 0.0f;
-    float xRelative = characterSpringArm->TargetArmLength >= 120.0f ? 0.0f : 40.0f;
-    float zRelative = characterSpringArm->TargetArmLength >= 120.0f ? 0.0f : 65.0f;
-    FVector relLocation = characterSpringArm->GetRelativeLocation();
-    relLocation.X = xRelative;
-    relLocation.Z = zRelative;
-    characterSpringArm->SetRelativeLocation(relLocation);
-    characterSpringArm->SocketOffset = FVector(characterSpringArm->SocketOffset.X, yOffset, zOffset);
+    float zOffset = characterSpringArm->TargetArmLength >= 120.0f ? 70.0f : 0.0f;
+    characterSpringArm->SocketOffset = FVector(0.0f, yOffset, zOffset);
+
+    ServerOnActionCameraZoom(Value);
+}
+
+void AADITLOIS_PlayerController::ServerOnActionCameraZoom_Implementation(const FInputActionValue &Value)
+{
+    if (this->GetPawn() == nullptr)
+    {
+        return;
+    }
+    TObjectPtr<AADITLOIS_PlayerCharacter> pCharacter = Cast<AADITLOIS_PlayerCharacter>(this->GetPawn());
+    float move = Value.Get<float>();
+    TObjectPtr<USpringArmComponent> characterSpringArm = pCharacter->springArm;
+    if (move > 0.0f)
+    {
+        characterSpringArm->TargetArmLength = characterSpringArm->TargetArmLength >= 150.0f ? characterSpringArm->TargetArmLength - 30.0f : 0.0f;
+        if (characterSpringArm->TargetArmLength == 0.0f)
+        {
+            pCharacter->bUseControllerRotationYaw = true;
+            characterSpringArm->AttachToComponent(pCharacter->GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("EyeSocket")));
+        }
+    }
+    else if (move < 0.0f)
+    {
+        characterSpringArm->TargetArmLength = characterSpringArm->TargetArmLength < 420.0f ? characterSpringArm->TargetArmLength + 30.0f : 450.0f;
+        if (characterSpringArm->TargetArmLength < 120.0f)
+        {
+            characterSpringArm->TargetArmLength = 120.0f;
+        }
+        pCharacter->bUseControllerRotationYaw = false;
+        characterSpringArm->AttachToComponent(pCharacter->GetRootComponent(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("EyeSocket")));
+    }
+    float yOffset = characterSpringArm->TargetArmLength >= 120.0f ? 10.0f + (characterSpringArm->TargetArmLength / 6.0f) : 0.0f;
+    float zOffset = characterSpringArm->TargetArmLength >= 120.0f ? 70.0f : 0.0f;
+    characterSpringArm->SocketOffset = FVector(0.0f, yOffset, zOffset);
 }

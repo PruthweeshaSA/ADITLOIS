@@ -111,4 +111,7 @@ private:
 
 	UFUNCTION(Server, Reliable, Blueprintable)
 	void ServerOnActionInteract(const FInputActionValue &Value);
+
+	UFUNCTION(Server, Reliable, Blueprintable)
+	void ServerOnActionCameraZoom(const FInputActionValue &Value);
 };
