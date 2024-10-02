@@ -46,6 +46,17 @@ void AADITLOIS_PlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 }
 
+void AADITLOIS_PlayerCharacter::PossessedBy(AController *NewController)
+{
+	Super::PossessedBy(NewController);
+
+	if (HasAuthority())
+	{
+		SetReplicateMovement(true);
+		bReplicates = true;
+	}
+}
+
 // Called every frame
 void AADITLOIS_PlayerCharacter::Tick(float DeltaTime)
 {

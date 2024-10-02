@@ -163,13 +163,20 @@ void AADITLOIS_PlayerController::SetupInputComponent()
 
 void AADITLOIS_PlayerController::OnActionLook(const FInputActionValue &Value)
 {
-    FVector2D look = Value.Get<FVector2D>();
-    this->AddYawInput(look.X);
-    this->AddPitchInput(look.Y);
-    ServerOnActionLook(Value);
+    FRotator actorRotation = this->GetPawn()->GetActorRotation();
+    if (!(this->HasAuthority()))
+    {
+        FVector2D look = Value.Get<FVector2D>();
+        this->GetPawn()->AddControllerYawInput(look.X);
+        this->GetPawn()->AddControllerPitchInput(look.Y);
+
+        actorRotation = this->GetPawn()->GetActorRotation();
+    }
+
+    ServerOnActionLook(Value, actorRotation);
 }
 
-void AADITLOIS_PlayerController::ServerOnActionLook_Implementation(const FInputActionValue &Value)
+void AADITLOIS_PlayerController::ServerOnActionLook_Implementation(const FInputActionValue &Value, FRotator actorRotation)
 {
     // if (GEngine)
     // {
@@ -177,18 +184,28 @@ void AADITLOIS_PlayerController::ServerOnActionLook_Implementation(const FInputA
     // }
 
     FVector2D look = Value.Get<FVector2D>();
-    this->AddYawInput(look.X);
-    this->AddPitchInput(look.Y);
+    this->GetPawn()->AddControllerYawInput(look.X);
+    this->GetPawn()->AddControllerPitchInput(look.Y);
+
+    if (HasAuthority())
+    {
+        this->GetPawn()->SetActorRotation(actorRotation);
+        ForceNetUpdate();
+    }
 }
 
 void AADITLOIS_PlayerController::OnActionMove(const FInputActionValue &Value)
 {
-    FVector2D move = Value.Get<FVector2D>();
-    this->GetPawn()->SetActorRotation(FRotator(this->GetPawn()->GetActorRotation().Pitch,
-                                               this->GetPawn()->GetControlRotation().Yaw,
-                                               this->GetPawn()->GetActorRotation().Roll));
-    this->GetPawn()->AddMovementInput(this->GetPawn()->GetActorForwardVector(), move.Y);
-    this->GetPawn()->AddMovementInput(this->GetPawn()->GetActorRightVector(), move.X);
+    if (!(this->HasAuthority()))
+    {
+        FVector2D move = Value.Get<FVector2D>();
+        this->GetPawn()->SetActorRotation(FRotator(this->GetPawn()->GetActorRotation().Pitch,
+                                                   this->GetPawn()->GetControlRotation().Yaw,
+                                                   this->GetPawn()->GetActorRotation().Roll));
+        this->GetPawn()->AddMovementInput(this->GetPawn()->GetActorForwardVector(), move.Y);
+        this->GetPawn()->AddMovementInput(this->GetPawn()->GetActorRightVector(), move.X);
+    }
+
     ServerOnActionMove(Value);
 }
 
@@ -209,10 +226,14 @@ void AADITLOIS_PlayerController::ServerOnActionMove_Implementation(const FInputA
 
 void AADITLOIS_PlayerController::OnActionJump(const FInputActionValue &Value)
 {
-    if (this->GetPawn())
+    if (!(this->HasAuthority()))
     {
-        Cast<AADITLOIS_PlayerCharacter>(this->GetPawn())->Jump();
+        if (this->GetPawn())
+        {
+            Cast<AADITLOIS_PlayerCharacter>(this->GetPawn())->Jump();
+        }
     }
+
     ServerOnActionJump(Value);
 }
 
@@ -226,7 +247,11 @@ void AADITLOIS_PlayerController::ServerOnActionJump_Implementation(const FInputA
 
 void AADITLOIS_PlayerController::OnActionSprintPress(const FInputActionValue &Value)
 {
-    Cast<UCharacterMovementComponent>(Cast<AADITLOIS_PlayerCharacter>(this->GetPawn())->GetMovementComponent())->MaxWalkSpeed = 600.0;
+    if (!(this->HasAuthority()))
+    {
+        Cast<UCharacterMovementComponent>(Cast<AADITLOIS_PlayerCharacter>(this->GetPawn())->GetMovementComponent())->MaxWalkSpeed = 600.0;
+    }
+
     ServerOnActionSprintPress(Value);
 }
 
@@ -237,8 +262,11 @@ void AADITLOIS_PlayerController::ServerOnActionSprintPress_Implementation(const 
 
 void AADITLOIS_PlayerController::OnActionSprintRelease(const FInputActionValue &Value)
 {
+    if (!(this->HasAuthority()))
+    {
+        Cast<UCharacterMovementComponent>(Cast<AADITLOIS_PlayerCharacter>(this->GetPawn())->GetMovementComponent())->MaxWalkSpeed = 300.0;
+    }
 
-    Cast<UCharacterMovementComponent>(Cast<AADITLOIS_PlayerCharacter>(this->GetPawn())->GetMovementComponent())->MaxWalkSpeed = 300.0;
     ServerOnActionSprintRelease(Value);
 }
 
@@ -249,7 +277,7 @@ void AADITLOIS_PlayerController::ServerOnActionSprintRelease_Implementation(cons
 
 void AADITLOIS_PlayerController::OnActionInteract(const FInputActionValue &Value)
 {
-    if (this->HasAuthority())
+    if (!(this->HasAuthority()))
     {
         if (this->GetPawn())
         {
@@ -260,10 +288,8 @@ void AADITLOIS_PlayerController::OnActionInteract(const FInputActionValue &Value
             }
         }
     }
-    else
-    {
-        ServerOnActionInteract(Value);
-    }
+
+    ServerOnActionInteract(Value);
 }
 
 void AADITLOIS_PlayerController::ServerOnActionInteract_Implementation(const FInputActionValue &Value)
@@ -280,37 +306,42 @@ void AADITLOIS_PlayerController::ServerOnActionInteract_Implementation(const FIn
 
 void AADITLOIS_PlayerController::OnActionCameraZoom(const FInputActionValue &Value)
 {
-    if (this->GetPawn() == nullptr)
+    if (true || (this->HasAuthority()))
     {
-        return;
-    }
-    TObjectPtr<AADITLOIS_PlayerCharacter> pCharacter = Cast<AADITLOIS_PlayerCharacter>(this->GetPawn());
-    float move = Value.Get<float>();
-    TObjectPtr<USpringArmComponent> characterSpringArm = pCharacter->springArm;
-    if (move > 0.0f)
-    {
-        characterSpringArm->TargetArmLength = characterSpringArm->TargetArmLength >= 150.0f ? characterSpringArm->TargetArmLength - 30.0f : 0.0f;
-        if (characterSpringArm->TargetArmLength == 0.0f)
+        if (this->GetPawn() == nullptr)
         {
-            pCharacter->bUseControllerRotationYaw = true;
-            characterSpringArm->AttachToComponent(pCharacter->GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("EyeSocket")));
+            return;
         }
-    }
-    else if (move < 0.0f)
-    {
-        characterSpringArm->TargetArmLength = characterSpringArm->TargetArmLength < 420.0f ? characterSpringArm->TargetArmLength + 30.0f : 450.0f;
-        if (characterSpringArm->TargetArmLength < 120.0f)
+        TObjectPtr<AADITLOIS_PlayerCharacter> pCharacter = Cast<AADITLOIS_PlayerCharacter>(this->GetPawn());
+        float move = Value.Get<float>();
+        TObjectPtr<USpringArmComponent> characterSpringArm = pCharacter->springArm;
+        if (move > 0.0f)
         {
-            characterSpringArm->TargetArmLength = 120.0f;
+            characterSpringArm->TargetArmLength = characterSpringArm->TargetArmLength >= 150.0f ? characterSpringArm->TargetArmLength - 30.0f : 0.0f;
+            if (characterSpringArm->TargetArmLength == 0.0f)
+            {
+                pCharacter->bUseControllerRotationYaw = true;
+                characterSpringArm->AttachToComponent(pCharacter->GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("EyeSocket")));
+            }
         }
-        pCharacter->bUseControllerRotationYaw = false;
-        characterSpringArm->AttachToComponent(pCharacter->GetRootComponent(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("EyeSocket")));
+        else if (move < 0.0f)
+        {
+            characterSpringArm->TargetArmLength = characterSpringArm->TargetArmLength < 420.0f ? characterSpringArm->TargetArmLength + 30.0f : 450.0f;
+            if (characterSpringArm->TargetArmLength < 120.0f)
+            {
+                characterSpringArm->TargetArmLength = 120.0f;
+            }
+            pCharacter->bUseControllerRotationYaw = false;
+            characterSpringArm->AttachToComponent(pCharacter->GetRootComponent(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("EyeSocket")));
+        }
+        float yOffset = characterSpringArm->TargetArmLength >= 120.0f ? 10.0f + (characterSpringArm->TargetArmLength / 6.0f) : 0.0f;
+        float zOffset = characterSpringArm->TargetArmLength >= 120.0f ? 70.0f : 0.0f;
+        characterSpringArm->SocketOffset = FVector(0.0f, yOffset, zOffset);
     }
-    float yOffset = characterSpringArm->TargetArmLength >= 120.0f ? 10.0f + (characterSpringArm->TargetArmLength / 6.0f) : 0.0f;
-    float zOffset = characterSpringArm->TargetArmLength >= 120.0f ? 70.0f : 0.0f;
-    characterSpringArm->SocketOffset = FVector(0.0f, yOffset, zOffset);
-
-    ServerOnActionCameraZoom(Value);
+    else
+    {
+        ServerOnActionCameraZoom(Value);
+    }
 }
 
 void AADITLOIS_PlayerController::ServerOnActionCameraZoom_Implementation(const FInputActionValue &Value)
@@ -344,4 +375,6 @@ void AADITLOIS_PlayerController::ServerOnActionCameraZoom_Implementation(const F
     float yOffset = characterSpringArm->TargetArmLength >= 120.0f ? 10.0f + (characterSpringArm->TargetArmLength / 6.0f) : 0.0f;
     float zOffset = characterSpringArm->TargetArmLength >= 120.0f ? 70.0f : 0.0f;
     characterSpringArm->SocketOffset = FVector(0.0f, yOffset, zOffset);
+
+    ForceNetUpdate();
 }

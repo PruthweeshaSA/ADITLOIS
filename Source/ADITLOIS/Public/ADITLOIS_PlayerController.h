@@ -95,7 +95,7 @@ private:
 	void OnActionCameraZoom(const FInputActionValue &Value);
 
 	UFUNCTION(Server, Reliable, Blueprintable)
-	void ServerOnActionLook(const FInputActionValue &Value);
+	void ServerOnActionLook(const FInputActionValue &Value, FRotator actorRotation);
 
 	UFUNCTION(Server, Reliable, Blueprintable)
 	void ServerOnActionMove(const FInputActionValue &Value);
