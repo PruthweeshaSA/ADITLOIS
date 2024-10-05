@@ -1,8 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "ADITLOIS_GameModeBase.h"
-#include "ADITLOIS_PlayerCharacter.h"
+#include "ADITLOIS_SaveGame.h"
 #include "AIController.h"
+#include "Kismet/GameplayStatics.h"
 #include "UObject/ConstructorHelpers.h"
 
 AADITLOIS_GameModeBase::AADITLOIS_GameModeBase()
@@ -61,4 +62,27 @@ void AADITLOIS_GameModeBase::BeginPlay()
             }
 
         } }, DelayTime, false);
+}
+
+void AADITLOIS_GameModeBase::SaveGame(AADITLOIS_PlayerController *pController)
+{
+    UADITLOIS_SaveGame *SavedGameInstance = Cast<UADITLOIS_SaveGame>(UGameplayStatics::CreateSaveGameObject(UADITLOIS_SaveGame::StaticClass()));
+
+    if (SavedGameInstance)
+    {
+        SavedGameInstance->playerId = Cast<ULocalPlayer>(pController->Player)->GetControllerId();
+        SavedGameInstance->playerTransform = pController->GetPawn()->GetActorTransform();
+
+        UGameplayStatics::SaveGameToSlot(SavedGameInstance, TEXT("SaveGameSlot"), 0);
+    }
+}
+
+void AADITLOIS_GameModeBase::LoadGame(AADITLOIS_PlayerController *pController)
+{
+    UADITLOIS_SaveGame *SavedGameInstance = Cast<UADITLOIS_SaveGame>(UGameplayStatics::LoadGameFromSlot(TEXT("SaveGameSlot"), 0));
+
+    if (SavedGameInstance && SavedGameInstance->playerId == Cast<ULocalPlayer>(pController->Player)->GetControllerId())
+    {
+        pController->GetPawn()->SetActorTransform(SavedGameInstance->playerTransform);
+    }
 }

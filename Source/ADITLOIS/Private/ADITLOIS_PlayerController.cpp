@@ -3,6 +3,7 @@
 #include "ADITLOIS_PlayerController.h"
 #include "UObject/ConstructorHelpers.h"
 #include "ADITLOIS_PlayerCharacter.h"
+#include "ADITLOIS_GameModeBase.h"
 #include "GameFramework/Character.h"
 
 AADITLOIS_PlayerController::AADITLOIS_PlayerController()
@@ -86,6 +87,28 @@ AADITLOIS_PlayerController::AADITLOIS_PlayerController()
     {
         UE_LOG(LogTemp, Error, TEXT("Failed to find Input Action Camera Zoom"));
     }
+
+    static ConstructorHelpers::FObjectFinder<UInputAction> InputActionSaveGameFinder(TEXT("InputAction'/Game/Assets/Inputs/IA_SaveGame.IA_SaveGame'"));
+    if (InputActionSaveGameFinder.Succeeded())
+    {
+        ActionSaveGame = InputActionSaveGameFinder.Object;
+        UE_LOG(LogTemp, Log, TEXT("Input Action Save Game found: %s"), *ActionSaveGame->GetName());
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("Failed to find Input Action Save Game"));
+    }
+
+    static ConstructorHelpers::FObjectFinder<UInputAction> InputActionLoadGameFinder(TEXT("InputAction'/Game/Assets/Inputs/IA_LoadGame.IA_LoadGame'"));
+    if (InputActionLoadGameFinder.Succeeded())
+    {
+        ActionLoadGame = InputActionLoadGameFinder.Object;
+        UE_LOG(LogTemp, Log, TEXT("Input Action Load Game found: %s"), *ActionLoadGame->GetName());
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("Failed to find Input Load Game Zoom"));
+    }
 }
 
 void AADITLOIS_PlayerController::BeginPlay()
@@ -158,6 +181,16 @@ void AADITLOIS_PlayerController::SetupInputComponent()
     if (ActionCameraZoom)
     {
         enhancedInputComponent->BindAction(ActionCameraZoom, ETriggerEvent::Triggered, this, &AADITLOIS_PlayerController::OnActionCameraZoom);
+    }
+
+    if (ActionSaveGame)
+    {
+        enhancedInputComponent->BindAction(ActionSaveGame, ETriggerEvent::Triggered, this, &AADITLOIS_PlayerController::OnActionSaveGame);
+    }
+
+    if (ActionLoadGame)
+    {
+        enhancedInputComponent->BindAction(ActionLoadGame, ETriggerEvent::Triggered, this, &AADITLOIS_PlayerController::OnActionLoadGame);
     }
 }
 
@@ -377,4 +410,38 @@ void AADITLOIS_PlayerController::ServerOnActionCameraZoom_Implementation(const F
     characterSpringArm->SocketOffset = FVector(0.0f, yOffset, zOffset);
 
     ForceNetUpdate();
+}
+
+void AADITLOIS_PlayerController::OnActionSaveGame(const FInputActionValue &Value)
+{
+    if (this->HasAuthority())
+    {
+        Cast<AADITLOIS_GameModeBase>(this->GetWorld()->GetAuthGameMode())->SaveGame(this);
+    }
+    else
+    {
+        ServerOnActionSaveGame(Value);
+    }
+}
+
+void AADITLOIS_PlayerController::ServerOnActionSaveGame_Implementation(const FInputActionValue &Value)
+{
+    Cast<AADITLOIS_GameModeBase>(this->GetWorld()->GetAuthGameMode())->SaveGame(this);
+}
+
+void AADITLOIS_PlayerController::OnActionLoadGame(const FInputActionValue &Value)
+{
+    if (this->HasAuthority())
+    {
+        Cast<AADITLOIS_GameModeBase>(this->GetWorld()->GetAuthGameMode())->LoadGame(this);
+    }
+    else
+    {
+        ServerOnActionLoadGame(Value);
+    }
+}
+
+void AADITLOIS_PlayerController::ServerOnActionLoadGame_Implementation(const FInputActionValue &Value)
+{
+    Cast<AADITLOIS_GameModeBase>(this->GetWorld()->GetAuthGameMode())->LoadGame(this);
 }

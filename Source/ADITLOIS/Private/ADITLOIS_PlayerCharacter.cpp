@@ -1,4 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
+#pragma once
 
 #include "ADITLOIS_PlayerCharacter.h"
 #include "UObject/ConstructorHelpers.h"
@@ -6,6 +7,8 @@
 #include "GameFramework/PawnMovementComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "Camera/CameraComponent.h"
 #include "Net/UnrealNetwork.h"
 
 // Sets default values
@@ -29,8 +32,8 @@ AADITLOIS_PlayerCharacter::AADITLOIS_PlayerCharacter()
 		this->GetMesh()->SetSkeletalMeshAsset(skeletalMeshFinder.Object);
 		this->GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, -85.0f));
 	}
-	springArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm"));
-	camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+	springArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComponent"));
+	camera = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
 
 	springArm->SetupAttachment(RootComponent);
 	camera->SetupAttachment(springArm);

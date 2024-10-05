@@ -18,6 +18,7 @@ class AADITLOIS_PlayerCharacter;
 class UInputMappingContext;
 class UInputAction;
 class UCharacterMovementComponent;
+class AADITLOIS_GameModeBase;
 
 /**
  *
@@ -65,6 +66,12 @@ private:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UInputAction> ActionCameraZoom = nullptr;
 
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UInputAction> ActionSaveGame = nullptr;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UInputAction> ActionLoadGame = nullptr;
+
 public:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<AADITLOIS_PlayerCharacter> playerCharacter = nullptr;
@@ -94,6 +101,12 @@ private:
 	UFUNCTION(Blueprintable)
 	void OnActionCameraZoom(const FInputActionValue &Value);
 
+	UFUNCTION(Blueprintable)
+	void OnActionSaveGame(const FInputActionValue &Value);
+
+	UFUNCTION(Blueprintable)
+	void OnActionLoadGame(const FInputActionValue &Value);
+
 	UFUNCTION(Server, Reliable, Blueprintable)
 	void ServerOnActionLook(const FInputActionValue &Value, FRotator actorRotation);
 
@@ -114,4 +127,10 @@ private:
 
 	UFUNCTION(Server, Reliable, Blueprintable)
 	void ServerOnActionCameraZoom(const FInputActionValue &Value);
+
+	UFUNCTION(Server, Reliable, Blueprintable)
+	void ServerOnActionSaveGame(const FInputActionValue &Value);
+
+	UFUNCTION(Server, Reliable, Blueprintable)
+	void ServerOnActionLoadGame(const FInputActionValue &Value);
 };
