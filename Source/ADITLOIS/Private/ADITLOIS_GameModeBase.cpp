@@ -70,20 +70,21 @@ void AADITLOIS_GameModeBase::SaveGame(AADITLOIS_PlayerController *pController)
 
     if (SavedGameInstance)
     {
-        SavedGameInstance->playerName = pController->Player->GetName();
+        FString playerName = pController->Player->GetName();
+        SavedGameInstance->playerName = playerName;
         SavedGameInstance->playerTransform = pController->GetPawn()->GetActorTransform();
 
-        UGameplayStatics::SaveGameToSlot(SavedGameInstance, TEXT("SaveGameSlot"), 0);
+        UGameplayStatics::SaveGameToSlot(SavedGameInstance, pController->Player->GetName(), 0);
     }
 }
 
 void AADITLOIS_GameModeBase::LoadGame(AADITLOIS_PlayerController *pController)
 {
-    UADITLOIS_SaveGame *SavedGameInstance = Cast<UADITLOIS_SaveGame>(UGameplayStatics::LoadGameFromSlot(TEXT("SaveGameSlot"), 0));
+    FString playerName = pController->Player->GetName();
+    UADITLOIS_SaveGame *SavedGameInstance = Cast<UADITLOIS_SaveGame>(UGameplayStatics::LoadGameFromSlot(playerName, 0));
 
     if (SavedGameInstance)
     {
-        FString playerName = pController->Player->GetName();
 
         if (SavedGameInstance->playerName == playerName)
         {

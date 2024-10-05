@@ -18,6 +18,7 @@ class APlayerState;
 class UPawnMovementComponent;
 class UCharacterMovementComponent;
 class UCapsuleComponent;
+struct FHitResult;
 
 UCLASS()
 class ADITLOIS_API AADITLOIS_PlayerCharacter : public ACharacter
@@ -49,6 +50,18 @@ public:
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<UCameraComponent> camera = nullptr;
 
+	UPROPERTY()
+	FHitResult hitResult;
+
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<AActor> interactionTarget = nullptr;
+
+	UPROPERTY()
+	FVector startPoint;
+
+	UPROPERTY()
+	FRotator viewRotation;
+	
+	UPROPERTY()
+	FVector endPoint;
 };

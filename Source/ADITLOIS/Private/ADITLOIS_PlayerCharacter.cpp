@@ -16,12 +16,13 @@ AADITLOIS_PlayerCharacter::AADITLOIS_PlayerCharacter()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	PrimaryActorTick.TickInterval = 0.1f;
+	PrimaryActorTick.TickInterval = 0.25f;
 	this->bReplicates = true;
 	this->SetReplicateMovement(true);
 	this->GetMovementComponent()->SetIsReplicated(true);
 	this->GetCapsuleComponent()->SetIsReplicated(true);
 	this->GetMesh()->SetIsReplicated(true);
+	this->hitResult = FHitResult();
 
 	this->bUseControllerRotationYaw = false;
 
@@ -65,11 +66,6 @@ void AADITLOIS_PlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	FHitResult hitResult;
-	FVector startPoint;
-	FRotator viewRotation;
-	FVector endPoint;
-
 	TObjectPtr<APlayerController> playerController = Cast<APlayerController>(GetController());
 
 	// startPoint = this->GetActorLocation() + (springArm ? springArm->GetRelativeLocation() : FVector(0.0f));
@@ -87,7 +83,7 @@ void AADITLOIS_PlayerCharacter::Tick(float DeltaTime)
 
 	FCollisionQueryParams TraceParams(FName(TEXT("")), false, this);
 
-	bool bHit = GetWorld()->LineTraceSingleByChannel(hitResult, startPoint, endPoint, ECC_Visibility, TraceParams);
+	bool bHit = GetWorld()->LineTraceSingleByChannel(this->hitResult, startPoint, endPoint, ECC_Visibility, TraceParams);
 
 	TObjectPtr<APlayerState> playerState = playerController ? playerController->PlayerState : nullptr;
 
@@ -99,7 +95,7 @@ void AADITLOIS_PlayerCharacter::Tick(float DeltaTime)
 	// 	GEngine->AddOnScreenDebugMessage(playerId, 2.0f, FColor(32, 64, 128), FString::Printf(TEXT("START: %s ----> END: %s"), *formattedStartVector, *formattedEndVector));
 	// }
 
-	interactionTarget = bHit ? hitResult.GetActor() : nullptr;
+	interactionTarget = bHit ? this->hitResult.GetActor() : nullptr;
 
 	if (GEngine && playerState)
 	{
