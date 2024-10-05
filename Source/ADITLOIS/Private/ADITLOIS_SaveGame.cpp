@@ -4,6 +4,6 @@
 
 UADITLOIS_SaveGame::UADITLOIS_SaveGame()
 {
-    playerId = -1;
+    playerName = TEXT("");
     playerTransform = FTransform(FRotator(0.0f), FVector(0.0f), FVector(1.0f));
 }

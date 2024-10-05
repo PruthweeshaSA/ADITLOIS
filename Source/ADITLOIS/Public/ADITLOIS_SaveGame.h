@@ -18,7 +18,7 @@ public:
 	UADITLOIS_SaveGame();
 
 	UPROPERTY(VisibleAnywhere, Category = "SaveData")
-	int32 playerId;
+	FString playerName;
 
 	UPROPERTY(VisibleAnywhere, Category = "SaveData")
 	FTransform playerTransform;
