@@ -95,7 +95,15 @@ void AADITLOIS_PlayerCharacter::Tick(float DeltaTime)
 	// 	GEngine->AddOnScreenDebugMessage(playerId, 2.0f, FColor(32, 64, 128), FString::Printf(TEXT("START: %s ----> END: %s"), *formattedStartVector, *formattedEndVector));
 	// }
 
-	interactionTarget = bHit ? this->hitResult.GetActor() : nullptr;
+	if (HasAuthority())
+	{
+		interactionTarget = bHit ? this->hitResult.GetActor() : nullptr;
+	}
+	else
+	{
+		ServerSetInteractionTarget(bHit);
+		// interactionTarget = bHit ? this->hitResult.GetActor() : nullptr;
+	}
 
 	if (GEngine && playerState)
 	{
@@ -103,6 +111,11 @@ void AADITLOIS_PlayerCharacter::Tick(float DeltaTime)
 		FString hitDebugMessage = interactionTarget ? interactionTarget->GetName() : FString::Printf(TEXT("NullPtr"));
 		GEngine->AddOnScreenDebugMessage(playerId, 1.0f, FColor(0, 192, 64), FString::Printf(TEXT("Interaction Target: %s"), *hitDebugMessage));
 	}
+}
+
+void AADITLOIS_PlayerCharacter::ServerSetInteractionTarget_Implementation(bool bHit)
+{
+	this->interactionTarget = bHit ? this->hitResult.GetActor() : nullptr;
 }
 
 // Called to bind functionality to input

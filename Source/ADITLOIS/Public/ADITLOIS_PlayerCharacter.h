@@ -61,7 +61,10 @@ public:
 
 	UPROPERTY()
 	FRotator viewRotation;
-	
+
 	UPROPERTY()
 	FVector endPoint;
+
+	UFUNCTION(Server, Reliable)
+	virtual void ServerSetInteractionTarget(bool bHit);
 };
