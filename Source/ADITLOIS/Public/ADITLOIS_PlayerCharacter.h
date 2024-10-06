@@ -66,5 +66,5 @@ public:
 	FVector endPoint;
 
 	UFUNCTION(Server, Reliable)
-	virtual void ServerSetInteractionTarget(bool bHit);
+	virtual void ServerSetInteractionTarget(bool bHit, FHitResult localHitResult);
 };

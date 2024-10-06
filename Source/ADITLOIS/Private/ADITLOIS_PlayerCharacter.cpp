@@ -101,7 +101,8 @@ void AADITLOIS_PlayerCharacter::Tick(float DeltaTime)
 	}
 	else
 	{
-		ServerSetInteractionTarget(bHit);
+		FHitResult localHitResult = this->hitResult;
+		ServerSetInteractionTarget(bHit, localHitResult);
 		// interactionTarget = bHit ? this->hitResult.GetActor() : nullptr;
 	}
 
@@ -113,9 +114,9 @@ void AADITLOIS_PlayerCharacter::Tick(float DeltaTime)
 	}
 }
 
-void AADITLOIS_PlayerCharacter::ServerSetInteractionTarget_Implementation(bool bHit)
+void AADITLOIS_PlayerCharacter::ServerSetInteractionTarget_Implementation(bool bHit, FHitResult localHitResult)
 {
-	this->interactionTarget = bHit ? this->hitResult.GetActor() : nullptr;
+	this->interactionTarget = bHit ? localHitResult.GetActor() : nullptr;
 }
 
 // Called to bind functionality to input
