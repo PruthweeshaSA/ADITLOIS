@@ -120,6 +120,8 @@ void AADITLOIS_PlayerController::BeginPlay()
             inputSubsystem->AddMappingContext(inputMappingContext, 0);
         }
     }
+
+    this->playerScore = 0;
 }
 
 void AADITLOIS_PlayerController::OnPossess(APawn *aPawn)
@@ -342,6 +344,7 @@ void AADITLOIS_PlayerController::ServerOnActionInteract_Implementation(const FIn
         if (actorToInteractWith && actorToInteractWith->GetIsReplicated())
         {
             actorToInteractWith->Destroy();
+            this->playerScore += 1;
         }
     }
 }
@@ -448,6 +451,7 @@ void AADITLOIS_PlayerController::OnActionLoadGame(const FInputActionValue &Value
     {
         ServerOnActionLoadGame(Value);
     }
+    this->SetControlRotation(this->playerControllerRotation);
 }
 
 void AADITLOIS_PlayerController::ServerOnActionLoadGame_Implementation(const FInputActionValue &Value)

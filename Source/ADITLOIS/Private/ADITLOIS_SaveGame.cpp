@@ -6,4 +6,6 @@ UADITLOIS_SaveGame::UADITLOIS_SaveGame()
 {
     playerName = TEXT("");
     playerTransform = FTransform(FRotator(0.0f), FVector(0.0f), FVector(1.0f));
+    playerScore = 0;
+    controlRotation = FRotator(0.0f);
 }

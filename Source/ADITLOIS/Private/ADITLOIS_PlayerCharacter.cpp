@@ -16,7 +16,7 @@ AADITLOIS_PlayerCharacter::AADITLOIS_PlayerCharacter()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	PrimaryActorTick.TickInterval = 0.25f;
+	PrimaryActorTick.TickInterval = 0.05f;
 	this->bReplicates = true;
 	this->SetReplicateMovement(true);
 	this->GetMovementComponent()->SetIsReplicated(true);

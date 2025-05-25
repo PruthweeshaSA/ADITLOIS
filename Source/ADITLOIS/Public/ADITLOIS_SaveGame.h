@@ -22,4 +22,10 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category = "SaveData")
 	FTransform playerTransform;
+
+	UPROPERTY(VisibleAnywhere, Category = "SaveData")
+	FRotator controlRotation;
+
+	UPROPERTY(VisibleAnywhere, Category = "SaveData")
+	float playerScore;
 };

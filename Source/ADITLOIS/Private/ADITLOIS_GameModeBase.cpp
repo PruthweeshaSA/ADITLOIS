@@ -2,6 +2,7 @@
 
 #include "ADITLOIS_GameModeBase.h"
 #include "ADITLOIS_SaveGame.h"
+#include "GameFramework/PlayerState.h"
 #include "AIController.h"
 #include "Kismet/GameplayStatics.h"
 #include "UObject/ConstructorHelpers.h"
@@ -12,7 +13,8 @@ AADITLOIS_GameModeBase::AADITLOIS_GameModeBase()
     characterClass = spawnClassFinder.Succeeded() ? spawnClassFinder.Class : nullptr;
     if (characterClass)
     {
-        UE_LOG(LogTemp, Log, TEXT("characterClass found: %s"), *characterClass->GetName());
+        DefaultPawnClass = characterClass;
+        UE_LOG(LogTemp, Log, TEXT("characterClass BluePrint found: %s"), *characterClass->GetName());
         if (GEngine)
         {
             GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(0, 192, 128), characterClass->GetName());
@@ -21,9 +23,31 @@ AADITLOIS_GameModeBase::AADITLOIS_GameModeBase()
     }
     else
     {
+        DefaultPawnClass = AADITLOIS_PlayerCharacter::StaticClass();
         if (GEngine)
         {
             GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(255, 64, 64), TEXT("characterClass not found!!!!!!!!!"));
+        }
+    }
+
+    static ConstructorHelpers::FClassFinder<APlayerController> controllerClassFinder(TEXT("'/Game/Blueprints/PlayerController_Blueprints/BP_ADITLOIS_PlayerController'"));
+    controllerClass = controllerClassFinder.Succeeded() ? controllerClassFinder.Class : nullptr;
+    if (controllerClass)
+    {
+        PlayerControllerClass = controllerClass;
+        UE_LOG(LogTemp, Log, TEXT("playerControllerClass BluePrint found: %s"), *controllerClass->GetName());
+        if (GEngine)
+        {
+            GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(0, 192, 128), controllerClass->GetName());
+            GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(64, 255, 64), TEXT("controllerClass found!"));
+        }
+    }
+    else
+    {
+        PlayerControllerClass = AADITLOIS_PlayerController::StaticClass();
+        if (GEngine)
+        {
+            GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(255, 64, 64), TEXT("controllerClass not found!!!!!!!!!"));
         }
     }
 }
@@ -35,60 +59,73 @@ void AADITLOIS_GameModeBase::BeginPlay()
     FTimerHandle TimerHandle;
     float DelayTime = 5.0f; // Delay time in seconds
 
-    GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
-                                           {
-        // Code to execute after the delay
-        int32 numHumanPlayers = GetNumPlayers();
+    GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AADITLOIS_GameModeBase::SpawnBots, DelayTime, false);
+}
 
-        TArray<AAIController*> bots;
+void AADITLOIS_GameModeBase::SpawnBots()
+{
+    // Code to execute after the delay
+    int32 numHumanPlayers = GetNumPlayers();
 
-        while (bots.Num() + numHumanPlayers < 8)
+    TArray<AAIController *> bots;
+
+    while (bots.Num() + numHumanPlayers < 8)
+    {
+        FVector spawnLocation = FVector(0.0f);
+        FRotator spawnRotator = FRotator::ZeroRotator;
+        TObjectPtr<AAIController> botAdded = Cast<AAIController>(GetWorld()->SpawnActor<AAIController>(AAIController::StaticClass(), spawnLocation, spawnRotator));
+        bots.Add(botAdded);
+        if (GEngine)
         {
-            FVector spawnLocation = FVector(0.0f);
-            FRotator spawnRotator = FRotator::ZeroRotator;
-            TObjectPtr<AAIController> botAdded = Cast<AAIController>(GetWorld()->SpawnActor<AAIController>(AAIController::StaticClass(), spawnLocation, spawnRotator));
-            bots.Add(botAdded);
-            if (GEngine)
-            {
-                GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(0, 192, 128), FString::Printf(TEXT("%d"), bots.Num()));
-            }
-            spawnLocation = FindPlayerStart(botAdded)->GetActorLocation();
-            spawnRotator = FindPlayerStart(botAdded)->GetActorRotation();
-            TObjectPtr<AADITLOIS_PlayerCharacter> botCharacterAdded = Cast<AADITLOIS_PlayerCharacter>(GetWorld()->SpawnActor<AADITLOIS_PlayerCharacter>(characterClass, spawnLocation, spawnRotator));
-            botAdded->Possess(botCharacterAdded);
-            if (GEngine && botCharacterAdded && characterClass)
-            {
-                GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(32, 32, 32), FString::Printf(TEXT("%d"), botCharacterAdded->GetActorLocation().Z));
-            }
-
-        } }, DelayTime, false);
+            GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(0, 192, 128), FString::Printf(TEXT("%d"), bots.Num()));
+        }
+        spawnLocation = FindPlayerStart(botAdded)->GetActorLocation();
+        spawnRotator = FindPlayerStart(botAdded)->GetActorRotation();
+        TObjectPtr<AADITLOIS_PlayerCharacter> botCharacterAdded = Cast<AADITLOIS_PlayerCharacter>(GetWorld()->SpawnActor<AADITLOIS_PlayerCharacter>(characterClass, spawnLocation, spawnRotator));
+        botAdded->Possess(botCharacterAdded);
+        if (GEngine && botCharacterAdded && characterClass)
+        {
+            GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(32, 32, 32), FString::Printf(TEXT("%d"), botCharacterAdded->GetActorLocation().Z));
+        }
+    }
 }
 
 void AADITLOIS_GameModeBase::SaveGame(AADITLOIS_PlayerController *pController)
 {
-    UADITLOIS_SaveGame *SavedGameInstance = Cast<UADITLOIS_SaveGame>(UGameplayStatics::CreateSaveGameObject(UADITLOIS_SaveGame::StaticClass()));
+    UADITLOIS_SaveGame *savedGameInstance = Cast<UADITLOIS_SaveGame>(UGameplayStatics::CreateSaveGameObject(UADITLOIS_SaveGame::StaticClass()));
 
-    if (SavedGameInstance)
+    if (savedGameInstance)
     {
         FString playerName = pController->Player->GetName();
-        SavedGameInstance->playerName = playerName;
-        SavedGameInstance->playerTransform = pController->GetPawn()->GetActorTransform();
+        savedGameInstance->playerName = playerName;
+        savedGameInstance->playerTransform = pController->GetPawn()->GetActorTransform();
+        savedGameInstance->playerScore = pController->playerScore;
+        savedGameInstance->controlRotation = pController->GetControlRotation();
 
-        UGameplayStatics::SaveGameToSlot(SavedGameInstance, pController->Player->GetName(), 0);
+        UGameplayStatics::SaveGameToSlot(savedGameInstance, pController->Player->GetName(), 0);
     }
 }
 
 void AADITLOIS_GameModeBase::LoadGame(AADITLOIS_PlayerController *pController)
 {
     FString playerName = pController->Player->GetName();
-    UADITLOIS_SaveGame *SavedGameInstance = Cast<UADITLOIS_SaveGame>(UGameplayStatics::LoadGameFromSlot(playerName, 0));
+    UADITLOIS_SaveGame *savedGameInstance = Cast<UADITLOIS_SaveGame>(UGameplayStatics::LoadGameFromSlot(playerName, 0));
 
-    if (SavedGameInstance)
+    if (savedGameInstance)
     {
-
-        if (SavedGameInstance->playerName == playerName)
+        if (savedGameInstance->playerName == playerName)
         {
-            pController->GetPawn()->SetActorTransform(SavedGameInstance->playerTransform);
+            pController->GetPawn()->SetActorTransform(savedGameInstance->playerTransform);
+            pController->playerScore = savedGameInstance->playerScore;
+            // pController->SetControlRotation(savedGameInstance->controlRotation);
+            pController->playerControllerRotation = savedGameInstance->controlRotation;
+            TObjectPtr<APlayerState> playerState = pController ? pController->PlayerState : nullptr;
+            if (GEngine && playerState)
+            {
+                int32 playerId = playerState->GetPlayerId();
+                FString hitDebugMessage = FString::Printf(TEXT("Camera Position loaded from savefile"));
+                GEngine->AddOnScreenDebugMessage(playerId, 1.0f, FColor(0, 192, 64), FString::Printf(TEXT("%s"), *hitDebugMessage));
+            }
         }
     }
 }

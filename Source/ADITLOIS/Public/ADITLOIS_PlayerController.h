@@ -76,6 +76,12 @@ public:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<AADITLOIS_PlayerCharacter> playerCharacter = nullptr;
 
+	UPROPERTY()
+	float playerScore = 0;
+
+	UPROPERTY()
+	FRotator playerControllerRotation = FRotator(0.0f);
+
 private:
 	UFUNCTION(Server, Reliable)
 	void ServerOnPossess(APawn *aPawn);

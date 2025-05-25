@@ -7,6 +7,7 @@
 #include "ADITLOIS_PlayerController.h"
 #include "ADITLOIS_PlayerCharacter.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/PlayerController.h"
 #include "ADITLOIS_GameModeBase.generated.h"
 
 /**
@@ -32,6 +33,12 @@ public:
 
 	virtual void LoadGame(AADITLOIS_PlayerController *pController);
 
+	UFUNCTION(Blueprintable)
+	virtual void SpawnBots();
+
 	UPROPERTY()
 	TSubclassOf<ACharacter> characterClass = nullptr;
+
+	UPROPERTY()
+	TSubclassOf<APlayerController> controllerClass = nullptr;
 };
