@@ -1,6 +1,10 @@
 /.git
+/.vs
 /.vscode
 /Content
 /DerivedDataCache
 /Intermediate
+/PackagedGame
 /Saved
+/Plugins/AdvancedSessions/Intermediate
+/Plugins/AdvancedSteamSessions/Intermediate

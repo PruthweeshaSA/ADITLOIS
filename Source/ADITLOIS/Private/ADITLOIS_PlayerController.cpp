@@ -458,3 +458,12 @@ void AADITLOIS_PlayerController::ServerOnActionLoadGame_Implementation(const FIn
 {
     Cast<AADITLOIS_GameModeBase>(this->GetWorld()->GetAuthGameMode())->LoadGame(this);
 }
+
+void AADITLOIS_PlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+    DOREPLIFETIME(AADITLOIS_PlayerController, playerCharacter);
+    DOREPLIFETIME(AADITLOIS_PlayerController, playerScore);
+    DOREPLIFETIME(AADITLOIS_PlayerController, playerControllerRotation);
+}

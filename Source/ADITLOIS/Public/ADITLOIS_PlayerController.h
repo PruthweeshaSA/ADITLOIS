@@ -10,6 +10,7 @@
 #include "InputMappingContext.h"
 #include "InputAction.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Net/UnrealNetwork.h"
 
 #include "ADITLOIS_PlayerController.generated.h"
 
@@ -73,13 +74,15 @@ private:
 	TObjectPtr<UInputAction> ActionLoadGame = nullptr;
 
 public:
-	UPROPERTY(EditAnywhere)
+	void GetLifetimeReplicatedProps(class TArray<FLifetimeProperty> &OutLifetimeProps) const override;
+
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<AADITLOIS_PlayerCharacter> playerCharacter = nullptr;
 
-	UPROPERTY()
-	float playerScore = 0;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
+	int32 playerScore = 0;
 
-	UPROPERTY()
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
 	FRotator playerControllerRotation = FRotator(0.0f);
 
 private:
