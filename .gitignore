@@ -1,5 +1,7 @@
 Binaries/*
 Content/*
+!Content/Blueprints/
+!Conten/Blueprints/**
 Intermediate/*
 Saved/*
 DerivedDataCache/*
@@ -9,3 +11,4 @@ Plugins/*
 PackagedGame/*
 Build/*
 .vs/ADITLOIS/v17/.suo
+
