@@ -69,7 +69,7 @@ void AADITLOIS_GameModeBase::SpawnBots()
 
     TArray<AAIController *> bots;
 
-    while (bots.Num() + numHumanPlayers < 8)
+    while (bots.Num() < numHumanPlayers)
     {
         FVector spawnLocation = FVector(0.0f);
         FRotator spawnRotator = FRotator::ZeroRotator;

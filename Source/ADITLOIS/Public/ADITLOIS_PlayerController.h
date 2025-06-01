@@ -20,6 +20,7 @@ class UInputMappingContext;
 class UInputAction;
 class UCharacterMovementComponent;
 class AADITLOIS_GameModeBase;
+class UUserWidget;
 
 /**
  *
@@ -33,13 +34,13 @@ public:
 	AADITLOIS_PlayerController();
 
 private:
-	UFUNCTION(Blueprintable)
+	UFUNCTION(BlueprintCallable)
 	virtual void OnPossess(APawn *aPawn) override;
 
-	UFUNCTION(Blueprintable)
+	UFUNCTION(BlueprintCallable)
 	virtual void SetupInputComponent() override;
 
-	UFUNCTION(Blueprintable)
+	UFUNCTION(BlueprintCallable)
 	virtual void BeginPlay() override;
 
 private:
@@ -73,6 +74,9 @@ private:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UInputAction> ActionLoadGame = nullptr;
 
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UInputAction> ActionPauseGame = nullptr;
+
 public:
 	void GetLifetimeReplicatedProps(class TArray<FLifetimeProperty> &OutLifetimeProps) const override;
 
@@ -89,33 +93,38 @@ private:
 	UFUNCTION(Server, Reliable)
 	void ServerOnPossess(APawn *aPawn);
 
-	UFUNCTION(Blueprintable)
+public:
+	UFUNCTION(BlueprintCallable)
 	void OnActionLook(const FInputActionValue &Value);
 
-	UFUNCTION(Blueprintable)
+	UFUNCTION(BlueprintCallable)
 	void OnActionMove(const FInputActionValue &Value);
 
-	UFUNCTION(Blueprintable)
+	UFUNCTION(BlueprintCallable)
 	void OnActionJump(const FInputActionValue &Value);
 
-	UFUNCTION(Blueprintable)
+	UFUNCTION(BlueprintCallable)
 	void OnActionSprintPress(const FInputActionValue &Value);
 
-	UFUNCTION(Blueprintable)
+	UFUNCTION(BlueprintCallable)
 	void OnActionSprintRelease(const FInputActionValue &Value);
 
-	UFUNCTION(Blueprintable)
+	UFUNCTION(BlueprintCallable)
 	void OnActionInteract(const FInputActionValue &Value);
 
-	UFUNCTION(Blueprintable)
+	UFUNCTION(BlueprintCallable)
 	void OnActionCameraZoom(const FInputActionValue &Value);
 
-	UFUNCTION(Blueprintable)
-	void OnActionSaveGame(const FInputActionValue &Value);
+	UFUNCTION(BlueprintCallable)
+	void OnActionSaveGame();
 
-	UFUNCTION(Blueprintable)
-	void OnActionLoadGame(const FInputActionValue &Value);
+	UFUNCTION(BlueprintCallable)
+	void OnActionLoadGame();
 
+	UFUNCTION(BlueprintCallable)
+	void OnActionPauseGame();
+
+private:
 	UFUNCTION(Server, Reliable, Blueprintable)
 	void ServerOnActionLook(const FInputActionValue &Value, FRotator actorRotation);
 
@@ -138,8 +147,8 @@ private:
 	void ServerOnActionCameraZoom(const FInputActionValue &Value);
 
 	UFUNCTION(Server, Reliable, Blueprintable)
-	void ServerOnActionSaveGame(const FInputActionValue &Value);
+	void ServerOnActionSaveGame();
 
 	UFUNCTION(Server, Reliable, Blueprintable)
-	void ServerOnActionLoadGame(const FInputActionValue &Value);
+	void ServerOnActionLoadGame();
 };

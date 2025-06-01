@@ -5,13 +5,15 @@
 #include "ADITLOIS_PlayerCharacter.h"
 #include "ADITLOIS_GameModeBase.h"
 #include "GameFramework/Character.h"
+#include "Blueprint/UserWidget.h"
 
 AADITLOIS_PlayerController::AADITLOIS_PlayerController()
 {
     bReplicates = true;
 
     // Use FObjectFinder to find the InputMappingContext
-    static ConstructorHelpers::FObjectFinder<UInputMappingContext> InputMappingContextFinder(TEXT("InputMappingContext'/Game/Assets/Inputs/IMC_Locomotion.IMC_Locomotion'"));
+    const TCHAR *locomotionIMCReferencePath = TEXT("InputMappingContext'/Game/Assets/Inputs/IMC_Locomotion.IMC_Locomotion'");
+    static ConstructorHelpers::FObjectFinder<UInputMappingContext> InputMappingContextFinder(locomotionIMCReferencePath);
     if (InputMappingContextFinder.Succeeded())
     {
         inputMappingContext = InputMappingContextFinder.Object;
@@ -22,7 +24,8 @@ AADITLOIS_PlayerController::AADITLOIS_PlayerController()
         UE_LOG(LogTemp, Error, TEXT("Failed to find Input Mapping Context"));
     }
 
-    static ConstructorHelpers::FObjectFinder<UInputAction> InputActionLookFinder(TEXT("InputAction'/Game/Assets/Inputs/IA_Look.IA_Look'"));
+    const TCHAR *lookInputActionReferencePath = TEXT("InputAction'/Game/Assets/Inputs/IA_Look.IA_Look'");
+    static ConstructorHelpers::FObjectFinder<UInputAction> InputActionLookFinder(lookInputActionReferencePath);
     if (InputActionLookFinder.Succeeded())
     {
         ActionLook = InputActionLookFinder.Object;
@@ -33,7 +36,8 @@ AADITLOIS_PlayerController::AADITLOIS_PlayerController()
         UE_LOG(LogTemp, Error, TEXT("Failed to find Input Action Look"));
     }
 
-    static ConstructorHelpers::FObjectFinder<UInputAction> InputActionMoveFinder(TEXT("InputAction'/Game/Assets/Inputs/IA_Move.IA_Move'"));
+    const TCHAR *moveInputActionReferencePath = TEXT("InputAction'/Game/Assets/Inputs/IA_Move.IA_Move'");
+    static ConstructorHelpers::FObjectFinder<UInputAction> InputActionMoveFinder(moveInputActionReferencePath);
     if (InputActionMoveFinder.Succeeded())
     {
         ActionMove = InputActionMoveFinder.Object;
@@ -44,7 +48,8 @@ AADITLOIS_PlayerController::AADITLOIS_PlayerController()
         UE_LOG(LogTemp, Error, TEXT("Failed to find Input Action Move"));
     }
 
-    static ConstructorHelpers::FObjectFinder<UInputAction> InputActionJumpFinder(TEXT("InputAction'/Game/Assets/Inputs/IA_Jump.IA_Jump'"));
+    const TCHAR *jumpInputActionReferencePath = TEXT("InputAction'/Game/Assets/Inputs/IA_Jump.IA_Jump'");
+    static ConstructorHelpers::FObjectFinder<UInputAction> InputActionJumpFinder(jumpInputActionReferencePath);
     if (InputActionJumpFinder.Succeeded())
     {
         ActionJump = InputActionJumpFinder.Object;
@@ -55,7 +60,8 @@ AADITLOIS_PlayerController::AADITLOIS_PlayerController()
         UE_LOG(LogTemp, Error, TEXT("Failed to find Input Action Jump"));
     }
 
-    static ConstructorHelpers::FObjectFinder<UInputAction> InputActionSprintFinder(TEXT("InputAction'/Game/Assets/Inputs/IA_Sprint.IA_Sprint'"));
+    const TCHAR *sprintInputActionReferencePath = TEXT("InputAction'/Game/Assets/Inputs/IA_Sprint.IA_Sprint'");
+    static ConstructorHelpers::FObjectFinder<UInputAction> InputActionSprintFinder(sprintInputActionReferencePath);
     if (InputActionSprintFinder.Succeeded())
     {
         ActionSprint = InputActionSprintFinder.Object;
@@ -66,7 +72,8 @@ AADITLOIS_PlayerController::AADITLOIS_PlayerController()
         UE_LOG(LogTemp, Error, TEXT("Failed to find Input Action Sprint"));
     }
 
-    static ConstructorHelpers::FObjectFinder<UInputAction> InputActionInteractFinder(TEXT("InputAction'/Game/Assets/Inputs/IA_Interact.IA_Interact'"));
+    const TCHAR *interactInputActionReferencePath = TEXT("InputAction'/Game/Assets/Inputs/IA_Interact.IA_Interact'");
+    static ConstructorHelpers::FObjectFinder<UInputAction> InputActionInteractFinder(interactInputActionReferencePath);
     if (InputActionSprintFinder.Succeeded())
     {
         ActionInteract = InputActionInteractFinder.Object;
@@ -77,7 +84,8 @@ AADITLOIS_PlayerController::AADITLOIS_PlayerController()
         UE_LOG(LogTemp, Error, TEXT("Failed to find Input Action Interact"));
     }
 
-    static ConstructorHelpers::FObjectFinder<UInputAction> InputActionCameraZoomFinder(TEXT("InputAction'/Game/Assets/Inputs/IA_CameraZoom.IA_CameraZoom'"));
+    const TCHAR *cameraZoomInputActionReferencePath = TEXT("InputAction'/Game/Assets/Inputs/IA_CameraZoom.IA_CameraZoom'");
+    static ConstructorHelpers::FObjectFinder<UInputAction> InputActionCameraZoomFinder(cameraZoomInputActionReferencePath);
     if (InputActionCameraZoomFinder.Succeeded())
     {
         ActionCameraZoom = InputActionCameraZoomFinder.Object;
@@ -88,7 +96,8 @@ AADITLOIS_PlayerController::AADITLOIS_PlayerController()
         UE_LOG(LogTemp, Error, TEXT("Failed to find Input Action Camera Zoom"));
     }
 
-    static ConstructorHelpers::FObjectFinder<UInputAction> InputActionSaveGameFinder(TEXT("InputAction'/Game/Assets/Inputs/IA_SaveGame.IA_SaveGame'"));
+    const TCHAR *saveGameInputActionReferencePath = TEXT("InputAction'/Game/Assets/Inputs/IA_SaveGame.IA_SaveGame'");
+    static ConstructorHelpers::FObjectFinder<UInputAction> InputActionSaveGameFinder(saveGameInputActionReferencePath);
     if (InputActionSaveGameFinder.Succeeded())
     {
         ActionSaveGame = InputActionSaveGameFinder.Object;
@@ -99,7 +108,8 @@ AADITLOIS_PlayerController::AADITLOIS_PlayerController()
         UE_LOG(LogTemp, Error, TEXT("Failed to find Input Action Save Game"));
     }
 
-    static ConstructorHelpers::FObjectFinder<UInputAction> InputActionLoadGameFinder(TEXT("InputAction'/Game/Assets/Inputs/IA_LoadGame.IA_LoadGame'"));
+    const TCHAR *loadGameInputActionReferencePath = TEXT("InputAction'/Game/Assets/Inputs/IA_LoadGame.IA_LoadGame'");
+    static ConstructorHelpers::FObjectFinder<UInputAction> InputActionLoadGameFinder(loadGameInputActionReferencePath);
     if (InputActionLoadGameFinder.Succeeded())
     {
         ActionLoadGame = InputActionLoadGameFinder.Object;
@@ -107,7 +117,19 @@ AADITLOIS_PlayerController::AADITLOIS_PlayerController()
     }
     else
     {
-        UE_LOG(LogTemp, Error, TEXT("Failed to find Input Load Game Zoom"));
+        UE_LOG(LogTemp, Error, TEXT("Failed to find Input Load Game"));
+    }
+
+    const TCHAR *pauseGameInputActionReferencePath = TEXT("InputAction'/Game/Assets/Inputs/IA_PauseGame.IA_PauseGame'");
+    static ConstructorHelpers::FObjectFinder<UInputAction> InputActionPauseGameFinder(pauseGameInputActionReferencePath);
+    if (InputActionPauseGameFinder.Succeeded())
+    {
+        ActionPauseGame = InputActionPauseGameFinder.Object;
+        UE_LOG(LogTemp, Log, TEXT("Input Action Pause Game found: %s"), *ActionPauseGame->GetName());
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("Failed to find Input Pause Game"));
     }
 }
 
@@ -193,6 +215,11 @@ void AADITLOIS_PlayerController::SetupInputComponent()
     if (ActionLoadGame)
     {
         enhancedInputComponent->BindAction(ActionLoadGame, ETriggerEvent::Triggered, this, &AADITLOIS_PlayerController::OnActionLoadGame);
+    }
+
+    if (ActionPauseGame)
+    {
+        enhancedInputComponent->BindAction(ActionPauseGame, ETriggerEvent::Triggered, this, &AADITLOIS_PlayerController::OnActionPauseGame);
     }
 }
 
@@ -424,7 +451,7 @@ void AADITLOIS_PlayerController::ServerOnActionCameraZoom_Implementation(const F
     ForceNetUpdate();
 }
 
-void AADITLOIS_PlayerController::OnActionSaveGame(const FInputActionValue &Value)
+void AADITLOIS_PlayerController::OnActionSaveGame()
 {
     if (this->HasAuthority())
     {
@@ -432,16 +459,16 @@ void AADITLOIS_PlayerController::OnActionSaveGame(const FInputActionValue &Value
     }
     else
     {
-        ServerOnActionSaveGame(Value);
+        ServerOnActionSaveGame();
     }
 }
 
-void AADITLOIS_PlayerController::ServerOnActionSaveGame_Implementation(const FInputActionValue &Value)
+void AADITLOIS_PlayerController::ServerOnActionSaveGame_Implementation()
 {
     Cast<AADITLOIS_GameModeBase>(this->GetWorld()->GetAuthGameMode())->SaveGame(this);
 }
 
-void AADITLOIS_PlayerController::OnActionLoadGame(const FInputActionValue &Value)
+void AADITLOIS_PlayerController::OnActionLoadGame()
 {
     if (this->HasAuthority())
     {
@@ -449,14 +476,39 @@ void AADITLOIS_PlayerController::OnActionLoadGame(const FInputActionValue &Value
     }
     else
     {
-        ServerOnActionLoadGame(Value);
+        ServerOnActionLoadGame();
     }
     this->SetControlRotation(this->playerControllerRotation);
 }
 
-void AADITLOIS_PlayerController::ServerOnActionLoadGame_Implementation(const FInputActionValue &Value)
+void AADITLOIS_PlayerController::ServerOnActionLoadGame_Implementation()
 {
     Cast<AADITLOIS_GameModeBase>(this->GetWorld()->GetAuthGameMode())->LoadGame(this);
+}
+
+void AADITLOIS_PlayerController::OnActionPauseGame()
+{
+    UClass *LoadedWidgetClass = LoadClass<UUserWidget>(
+        nullptr,
+        TEXT("/Game/Blueprints/Widget_Blueprints/PauseMenuSpawner_Widget.PauseMenuSpawner_Widget_C") // Note the _C at the end!
+    );
+    if (LoadedWidgetClass)
+    {
+        UUserWidget *WidgetInstance = CreateWidget<UUserWidget>(GetWorld(), LoadedWidgetClass);
+        if (WidgetInstance != nullptr)
+        {
+            WidgetInstance->AddToViewport();
+
+            // Set input mode to UI only or game and UI
+            FInputModeUIOnly InputMode;
+            InputMode.SetWidgetToFocus(WidgetInstance->TakeWidget());
+            InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+            this->SetInputMode(InputMode);
+
+            // Show the mouse cursor
+            this->bShowMouseCursor = true;
+        }
+    }
 }
 
 void AADITLOIS_PlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const
