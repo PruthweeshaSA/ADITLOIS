@@ -21,6 +21,7 @@ class UInputAction;
 class UCharacterMovementComponent;
 class AADITLOIS_GameModeBase;
 class UUserWidget;
+class UGameplayStatics;
 
 /**
  *

@@ -6,6 +6,7 @@
 #include "ADITLOIS_GameModeBase.h"
 #include "GameFramework/Character.h"
 #include "Blueprint/UserWidget.h"
+#include "Kismet/GameplayStatics.h"
 
 AADITLOIS_PlayerController::AADITLOIS_PlayerController()
 {
@@ -135,6 +136,7 @@ AADITLOIS_PlayerController::AADITLOIS_PlayerController()
 
 void AADITLOIS_PlayerController::BeginPlay()
 {
+    Super::BeginPlay();
     if (UEnhancedInputLocalPlayerSubsystem *inputSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
     {
         if (inputMappingContext)
@@ -142,6 +144,12 @@ void AADITLOIS_PlayerController::BeginPlay()
             inputSubsystem->AddMappingContext(inputMappingContext, 0);
         }
     }
+
+    UGameplayStatics::SetGamePaused(GetWorld(), false);
+
+    FInputModeGameOnly InputMode;
+    this->SetInputMode(InputMode);
+    this->bShowMouseCursor = false;
 
     this->playerScore = 0;
 }
@@ -151,16 +159,21 @@ void AADITLOIS_PlayerController::OnPossess(APawn *aPawn)
     Super::OnPossess(aPawn);
 
     playerCharacter = Cast<AADITLOIS_PlayerCharacter>(aPawn);
-    Cast<UCharacterMovementComponent>(Cast<AADITLOIS_PlayerCharacter>(aPawn)->GetMovementComponent())->MaxWalkSpeed = 300.0;
-    checkf(playerCharacter,
-           TEXT("AADITLOIS_PlayerCharacter Cast failed."));
-
-    ServerOnPossess(aPawn);
+    if (playerCharacter != nullptr)
+    {
+        Cast<UCharacterMovementComponent>(playerCharacter->GetMovementComponent())->MaxWalkSpeed = 300.0;
+        ServerOnPossess(aPawn);
+    }
+    // checkf(playerCharacter,
+    //        TEXT("AADITLOIS_PlayerCharacter Cast failed."));
 }
 
 void AADITLOIS_PlayerController::ServerOnPossess_Implementation(APawn *aPawn)
 {
-    Cast<UCharacterMovementComponent>(Cast<AADITLOIS_PlayerCharacter>(aPawn)->GetMovementComponent())->MaxWalkSpeed = 300.0;
+    if (Cast<AADITLOIS_PlayerCharacter>(aPawn) != nullptr)
+    {
+        Cast<UCharacterMovementComponent>(Cast<AADITLOIS_PlayerCharacter>(aPawn)->GetMovementComponent())->MaxWalkSpeed = 300.0;
+    }
     if (GEngine)
     {
         GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor(64, 192, 64), TEXT("Server is running OnPossess"));

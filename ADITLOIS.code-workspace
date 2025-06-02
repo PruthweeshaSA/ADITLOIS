@@ -30,7 +30,7 @@
 					"ADITLOIS",
 					"Win64",
 					"Debug",
-					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS\\ADITLOIS.uproject",
+					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS_OG\\ADITLOIS.uproject",
 					"-waitmutex"
 				],
 				"problemMatcher": "$msCompile",
@@ -47,7 +47,7 @@
 					"ADITLOIS",
 					"Win64",
 					"Debug",
-					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS\\ADITLOIS.uproject",
+					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS_OG\\ADITLOIS.uproject",
 					"-waitmutex"
 				],
 				"problemMatcher": "$msCompile",
@@ -67,7 +67,7 @@
 					"ADITLOIS",
 					"Win64",
 					"Debug",
-					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS\\ADITLOIS.uproject",
+					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS_OG\\ADITLOIS.uproject",
 					"-waitmutex"
 				],
 				"problemMatcher": "$msCompile",
@@ -84,7 +84,7 @@
 					"ADITLOIS",
 					"Win64",
 					"DebugGame",
-					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS\\ADITLOIS.uproject",
+					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS_OG\\ADITLOIS.uproject",
 					"-waitmutex"
 				],
 				"problemMatcher": "$msCompile",
@@ -101,7 +101,7 @@
 					"ADITLOIS",
 					"Win64",
 					"DebugGame",
-					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS\\ADITLOIS.uproject",
+					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS_OG\\ADITLOIS.uproject",
 					"-waitmutex"
 				],
 				"problemMatcher": "$msCompile",
@@ -121,7 +121,7 @@
 					"ADITLOIS",
 					"Win64",
 					"DebugGame",
-					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS\\ADITLOIS.uproject",
+					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS_OG\\ADITLOIS.uproject",
 					"-waitmutex"
 				],
 				"problemMatcher": "$msCompile",
@@ -138,7 +138,7 @@
 					"ADITLOIS",
 					"Win64",
 					"Development",
-					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS\\ADITLOIS.uproject",
+					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS_OG\\ADITLOIS.uproject",
 					"-waitmutex"
 				],
 				"problemMatcher": "$msCompile",
@@ -155,7 +155,7 @@
 					"ADITLOIS",
 					"Win64",
 					"Development",
-					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS\\ADITLOIS.uproject",
+					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS_OG\\ADITLOIS.uproject",
 					"-waitmutex"
 				],
 				"problemMatcher": "$msCompile",
@@ -175,7 +175,7 @@
 					"ADITLOIS",
 					"Win64",
 					"Development",
-					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS\\ADITLOIS.uproject",
+					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS_OG\\ADITLOIS.uproject",
 					"-waitmutex"
 				],
 				"problemMatcher": "$msCompile",
@@ -192,7 +192,7 @@
 					"ADITLOIS",
 					"Win64",
 					"Test",
-					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS\\ADITLOIS.uproject",
+					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS_OG\\ADITLOIS.uproject",
 					"-waitmutex"
 				],
 				"problemMatcher": "$msCompile",
@@ -209,7 +209,7 @@
 					"ADITLOIS",
 					"Win64",
 					"Test",
-					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS\\ADITLOIS.uproject",
+					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS_OG\\ADITLOIS.uproject",
 					"-waitmutex"
 				],
 				"problemMatcher": "$msCompile",
@@ -229,7 +229,7 @@
 					"ADITLOIS",
 					"Win64",
 					"Test",
-					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS\\ADITLOIS.uproject",
+					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS_OG\\ADITLOIS.uproject",
 					"-waitmutex"
 				],
 				"problemMatcher": "$msCompile",
@@ -246,7 +246,7 @@
 					"ADITLOIS",
 					"Win64",
 					"Shipping",
-					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS\\ADITLOIS.uproject",
+					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS_OG\\ADITLOIS.uproject",
 					"-waitmutex"
 				],
 				"problemMatcher": "$msCompile",
@@ -263,7 +263,7 @@
 					"ADITLOIS",
 					"Win64",
 					"Shipping",
-					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS\\ADITLOIS.uproject",
+					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS_OG\\ADITLOIS.uproject",
 					"-waitmutex"
 				],
 				"problemMatcher": "$msCompile",
@@ -283,7 +283,7 @@
 					"ADITLOIS",
 					"Win64",
 					"Shipping",
-					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS\\ADITLOIS.uproject",
+					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS_OG\\ADITLOIS.uproject",
 					"-waitmutex"
 				],
 				"problemMatcher": "$msCompile",
@@ -300,7 +300,7 @@
 					"ADITLOISEditor",
 					"Win64",
 					"Debug",
-					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS\\ADITLOIS.uproject",
+					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS_OG\\ADITLOIS.uproject",
 					"-waitmutex"
 				],
 				"problemMatcher": "$msCompile",
@@ -317,7 +317,7 @@
 					"ADITLOISEditor",
 					"Win64",
 					"Debug",
-					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS\\ADITLOIS.uproject",
+					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS_OG\\ADITLOIS.uproject",
 					"-waitmutex"
 				],
 				"problemMatcher": "$msCompile",
@@ -337,7 +337,7 @@
 					"ADITLOISEditor",
 					"Win64",
 					"Debug",
-					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS\\ADITLOIS.uproject",
+					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS_OG\\ADITLOIS.uproject",
 					"-waitmutex"
 				],
 				"problemMatcher": "$msCompile",
@@ -354,7 +354,7 @@
 					"ADITLOISEditor",
 					"Win64",
 					"DebugGame",
-					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS\\ADITLOIS.uproject",
+					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS_OG\\ADITLOIS.uproject",
 					"-waitmutex"
 				],
 				"problemMatcher": "$msCompile",
@@ -371,7 +371,7 @@
 					"ADITLOISEditor",
 					"Win64",
 					"DebugGame",
-					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS\\ADITLOIS.uproject",
+					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS_OG\\ADITLOIS.uproject",
 					"-waitmutex"
 				],
 				"problemMatcher": "$msCompile",
@@ -391,7 +391,7 @@
 					"ADITLOISEditor",
 					"Win64",
 					"DebugGame",
-					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS\\ADITLOIS.uproject",
+					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS_OG\\ADITLOIS.uproject",
 					"-waitmutex"
 				],
 				"problemMatcher": "$msCompile",
@@ -408,7 +408,7 @@
 					"ADITLOISEditor",
 					"Win64",
 					"Development",
-					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS\\ADITLOIS.uproject",
+					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS_OG\\ADITLOIS.uproject",
 					"-waitmutex"
 				],
 				"problemMatcher": "$msCompile",
@@ -425,7 +425,7 @@
 					"ADITLOISEditor",
 					"Win64",
 					"Development",
-					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS\\ADITLOIS.uproject",
+					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS_OG\\ADITLOIS.uproject",
 					"-waitmutex"
 				],
 				"problemMatcher": "$msCompile",
@@ -445,7 +445,7 @@
 					"ADITLOISEditor",
 					"Win64",
 					"Development",
-					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS\\ADITLOIS.uproject",
+					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS_OG\\ADITLOIS.uproject",
 					"-waitmutex"
 				],
 				"problemMatcher": "$msCompile",
@@ -462,7 +462,7 @@
 			{
 				"name": "Launch ADITLOIS (Debug)",
 				"request": "launch",
-				"program": "C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS\\Binaries\\Win64\\UnrealGame-Win64-Debug.exe",
+				"program": "C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS_OG\\Binaries\\Win64\\UnrealGame-Win64-Debug.exe",
 				"preLaunchTask": "ADITLOIS Win64 Debug Build",
 				"args": [
 				],
@@ -478,7 +478,7 @@
 			{
 				"name": "Launch ADITLOIS (DebugGame)",
 				"request": "launch",
-				"program": "C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS\\Binaries\\Win64\\UnrealGame-Win64-DebugGame.exe",
+				"program": "C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS_OG\\Binaries\\Win64\\UnrealGame-Win64-DebugGame.exe",
 				"preLaunchTask": "ADITLOIS Win64 DebugGame Build",
 				"args": [
 				],
@@ -494,7 +494,7 @@
 			{
 				"name": "Launch ADITLOIS (Development)",
 				"request": "launch",
-				"program": "C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS\\Binaries\\Win64\\UnrealGame.exe",
+				"program": "C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS_OG\\Binaries\\Win64\\UnrealGame.exe",
 				"preLaunchTask": "ADITLOIS Win64 Development Build",
 				"args": [
 				],
@@ -510,7 +510,7 @@
 			{
 				"name": "Launch ADITLOIS (Test)",
 				"request": "launch",
-				"program": "C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS\\Binaries\\Win64\\UnrealGame-Win64-Test.exe",
+				"program": "C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS_OG\\Binaries\\Win64\\UnrealGame-Win64-Test.exe",
 				"preLaunchTask": "ADITLOIS Win64 Test Build",
 				"args": [
 				],
@@ -526,7 +526,7 @@
 			{
 				"name": "Launch ADITLOIS (Shipping)",
 				"request": "launch",
-				"program": "C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS\\Binaries\\Win64\\UnrealGame-Win64-Shipping.exe",
+				"program": "C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS_OG\\Binaries\\Win64\\UnrealGame-Win64-Shipping.exe",
 				"preLaunchTask": "ADITLOIS Win64 Shipping Build",
 				"args": [
 				],
@@ -545,7 +545,7 @@
 				"program": "C:\\Program Files\\Epic Games\\UE_5.3\\Engine\\Binaries\\Win64\\UnrealEditor-Win64-Debug.exe",
 				"preLaunchTask": "ADITLOISEditor Win64 Debug Build",
 				"args": [
-					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS\\ADITLOIS.uproject"
+					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS_OG\\ADITLOIS.uproject"
 				],
 				"cwd": "C:\\Program Files\\Epic Games\\UE_5.3",
 				"stopAtEntry": false,
@@ -562,7 +562,7 @@
 				"program": "C:\\Program Files\\Epic Games\\UE_5.3\\Engine\\Binaries\\Win64\\UnrealEditor-Win64-DebugGame.exe",
 				"preLaunchTask": "ADITLOISEditor Win64 DebugGame Build",
 				"args": [
-					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS\\ADITLOIS.uproject"
+					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS_OG\\ADITLOIS.uproject"
 				],
 				"cwd": "C:\\Program Files\\Epic Games\\UE_5.3",
 				"stopAtEntry": false,
@@ -579,7 +579,7 @@
 				"program": "C:\\Program Files\\Epic Games\\UE_5.3\\Engine\\Binaries\\Win64\\UnrealEditor.exe",
 				"preLaunchTask": "ADITLOISEditor Win64 Development Build",
 				"args": [
-					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS\\ADITLOIS.uproject"
+					"C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS_OG\\ADITLOIS.uproject"
 				],
 				"cwd": "C:\\Program Files\\Epic Games\\UE_5.3",
 				"stopAtEntry": false,
@@ -599,7 +599,7 @@
 				"args": [
 					"-projectfiles",
 					"-vscode",
-					"-project=C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS\\ADITLOIS.uproject",
+					"-project=C:\\Documents\\Unreal Projects\\UE5\\ADITLOIS_OG\\ADITLOIS.uproject",
 					"-game",
 					"-engine",
 					"-dotnet"
