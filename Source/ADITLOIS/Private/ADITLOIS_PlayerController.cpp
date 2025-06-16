@@ -511,7 +511,7 @@ void AADITLOIS_PlayerController::OnActionPauseGame()
 {
     UClass *LoadedWidgetClass = LoadClass<UUserWidget>(
         nullptr,
-        TEXT("/Game/Blueprints/Widget_Blueprints/PauseMenuSpawner_Widget.PauseMenuSpawner_Widget_C") // Note the _C at the end!
+        TEXT("/Game/Blueprints/Widget_Blueprints/BP_PauseMenu_Widget.BP_PauseMenu_Widget_C") // Note the _C at the end!
     );
     if (LoadedWidgetClass)
     {

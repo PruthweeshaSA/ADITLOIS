@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Widget_SaveLoadResumeBase.generated.h"
+#include "PauseMenu_Widget.generated.h"
 
 class AADITLOIS_PlayerController;
 
@@ -12,12 +12,12 @@ class AADITLOIS_PlayerController;
  *
  */
 UCLASS(Blueprintable)
-class ADITLOIS_API UWidget_SaveLoadResumeBase : public UUserWidget
+class ADITLOIS_API UPauseMenu_Widget : public UUserWidget
 {
 	GENERATED_BODY()
 
 public:
-	UWidget_SaveLoadResumeBase(const FObjectInitializer &ObjectInitializer);
+	UPauseMenu_Widget(const FObjectInitializer &ObjectInitializer);
 
 	virtual void NativeConstruct() override;
 

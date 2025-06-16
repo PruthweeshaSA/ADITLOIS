@@ -1,13 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "Widget_SaveLoadResumeBase.h"
+#include "PauseMenu_Widget.h"
 
 #include "ADITLOIS_PlayerController.h"
 #include "Blueprint/UserWidget.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Kismet/GameplayStatics.h"
 
-UWidget_SaveLoadResumeBase::UWidget_SaveLoadResumeBase(const FObjectInitializer &ObjectInitializer) : Super(ObjectInitializer)
+UPauseMenu_Widget::UPauseMenu_Widget(const FObjectInitializer &ObjectInitializer) : Super(ObjectInitializer)
 {
     static ConstructorHelpers::FClassFinder<APlayerController> controllerClassFinder(TEXT("'/Game/Blueprints/PlayerController_Blueprints/BP_ADITLOIS_PlayerController'"));
     controllerClass = controllerClassFinder.Succeeded() ? controllerClassFinder.Class : nullptr;
@@ -29,7 +29,7 @@ UWidget_SaveLoadResumeBase::UWidget_SaveLoadResumeBase(const FObjectInitializer 
     }
 }
 
-void UWidget_SaveLoadResumeBase::NativeConstruct()
+void UPauseMenu_Widget::NativeConstruct()
 {
     Super::NativeConstruct();
 
@@ -45,7 +45,7 @@ void UWidget_SaveLoadResumeBase::NativeConstruct()
     // Widget setup logic goes here, like binding buttons, etc.
 }
 
-void UWidget_SaveLoadResumeBase::OnButtonHitResume()
+void UPauseMenu_Widget::OnButtonHitResume()
 {
     UE_LOG(LogTemp, Log, TEXT("Resume called"));
     if (GEngine)
@@ -63,7 +63,7 @@ void UWidget_SaveLoadResumeBase::OnButtonHitResume()
     RemoveFromParent();
 }
 
-void UWidget_SaveLoadResumeBase::OnButtonHitSaveGame()
+void UPauseMenu_Widget::OnButtonHitSaveGame()
 {
     UE_LOG(LogTemp, Log, TEXT("Save Game called"));
     if (GEngine)
@@ -91,7 +91,7 @@ void UWidget_SaveLoadResumeBase::OnButtonHitSaveGame()
     }
 }
 
-void UWidget_SaveLoadResumeBase::OnButtonHitLoadGame()
+void UPauseMenu_Widget::OnButtonHitLoadGame()
 {
     UE_LOG(LogTemp, Log, TEXT("Save Game called"));
     if (GEngine)
