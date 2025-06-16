@@ -50,6 +50,26 @@ AADITLOIS_GameModeBase::AADITLOIS_GameModeBase()
             GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(255, 64, 64), TEXT("controllerClass not found!!!!!!!!!"));
         }
     }
+
+    static ConstructorHelpers::FClassFinder<AHUD> hudClassFinder(TEXT("'/Game/Blueprints/Hud_Blueprints/ADITLOIS_HUD'"));
+    hudBlueprintClass = hudClassFinder.Succeeded() ? hudClassFinder.Class : nullptr;
+    if (hudBlueprintClass)
+    {
+        HUDClass = hudBlueprintClass;
+        UE_LOG(LogTemp, Log, TEXT("hudClass BluePrint found: %s"), *hudBlueprintClass->GetName());
+        if (GEngine)
+        {
+            GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(0, 192, 128), hudBlueprintClass->GetName());
+            GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(64, 255, 64), TEXT("hudBlueprintClass found!"));
+        }
+    }
+    else
+    {
+        if (GEngine)
+        {
+            GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(255, 64, 64), TEXT("hudBlueprintClass not found!!!!!!!!!"));
+        }
+    }
 }
 
 void AADITLOIS_GameModeBase::BeginPlay()

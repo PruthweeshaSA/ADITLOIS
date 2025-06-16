@@ -7,6 +7,7 @@
 #include "GameFramework/Character.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
+#include "IADITLOIS_Interactable_Interface.h"
 
 AADITLOIS_PlayerController::AADITLOIS_PlayerController()
 {
@@ -364,9 +365,13 @@ void AADITLOIS_PlayerController::OnActionInteract(const FInputActionValue &Value
         if (this->GetPawn())
         {
             TObjectPtr<AActor> actorToInteractWith = Cast<AADITLOIS_PlayerCharacter>(this->GetPawn())->interactionTarget;
-            if (actorToInteractWith)
+            if (actorToInteractWith && actorToInteractWith->GetIsReplicated())
             {
-                actorToInteractWith->Destroy();
+                if (actorToInteractWith->GetClass()->ImplementsInterface(UADITLOIS_Interactable_Interface::StaticClass()))
+                {
+                    actorToInteractWith->Destroy();
+                    this->playerScore += 1;
+                }
             }
         }
     }
@@ -383,8 +388,11 @@ void AADITLOIS_PlayerController::ServerOnActionInteract_Implementation(const FIn
         TObjectPtr<AActor> actorToInteractWith = Cast<AADITLOIS_PlayerCharacter>(this->GetPawn())->interactionTarget;
         if (actorToInteractWith && actorToInteractWith->GetIsReplicated())
         {
-            actorToInteractWith->Destroy();
-            this->playerScore += 1;
+            if (actorToInteractWith->GetClass()->ImplementsInterface(UADITLOIS_Interactable_Interface::StaticClass()))
+            {
+                actorToInteractWith->Destroy();
+                this->playerScore += 1;
+            }
         }
     }
 }

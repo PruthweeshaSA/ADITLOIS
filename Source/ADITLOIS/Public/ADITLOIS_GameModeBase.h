@@ -8,6 +8,7 @@
 #include "ADITLOIS_PlayerCharacter.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/PlayerController.h"
+#include "GameFramework/HUD.h"
 #include "ADITLOIS_GameModeBase.generated.h"
 
 /**
@@ -41,4 +42,7 @@ public:
 
 	UPROPERTY()
 	TSubclassOf<APlayerController> controllerClass = nullptr;
+
+	UPROPERTY()
+	TSubclassOf<AHUD> hudBlueprintClass = nullptr;
 };

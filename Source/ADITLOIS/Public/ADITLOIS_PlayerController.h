@@ -22,6 +22,7 @@ class UCharacterMovementComponent;
 class AADITLOIS_GameModeBase;
 class UUserWidget;
 class UGameplayStatics;
+class UADITLOIS_Interactable_Interface;
 
 /**
  *
