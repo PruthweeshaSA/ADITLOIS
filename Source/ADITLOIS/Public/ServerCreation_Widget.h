@@ -4,18 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "CPP_PauseMenu_WidgetBase.generated.h"
+#include "ServerCreation_Widget.generated.h"
 
 /**
  *
  */
 UCLASS()
-class ADITLOIS_API UCPP_PauseMenu_WidgetBase : public UUserWidget
+class ADITLOIS_API UServerCreation_Widget : public UUserWidget
 {
 	GENERATED_BODY()
 
 public:
-	// UCPP_PauseMenu_WidgetBase();
+	// UServerCreation_Widget();
 
 	// UFUNCTION(BlueprintCallable)
 	// void OnActionLoadGame();

@@ -51,7 +51,7 @@ AADITLOIS_GameModeBase::AADITLOIS_GameModeBase()
         }
     }
 
-    static ConstructorHelpers::FClassFinder<AHUD> hudClassFinder(TEXT("'/Game/Blueprints/Hud_Blueprints/ADITLOIS_HUD'"));
+    static ConstructorHelpers::FClassFinder<AHUD> hudClassFinder(TEXT("'/Game/Blueprints/Hud_Blueprints/BP_ADITLOIS_HUD'"));
     hudBlueprintClass = hudClassFinder.Succeeded() ? hudClassFinder.Class : nullptr;
     if (hudBlueprintClass)
     {
