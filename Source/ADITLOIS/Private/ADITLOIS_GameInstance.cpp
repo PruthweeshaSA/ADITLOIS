@@ -5,6 +5,7 @@
 #include "AdvancedSessionsLibrary.h"
 #include "CreateSessionCallbackProxyAdvanced.h"
 #include "Kismet/GameplayStatics.h"
+#include "OnlineSubsystemUtils.h"
 
 void UADITLOIS_GameInstance::Init()
 {
@@ -144,3 +145,52 @@ void UADITLOIS_GameInstance::OnSessionCreatedFailure()
         StoredProxy = nullptr;
     }
 }
+
+void UADITLOIS_GameInstance::JoinGameSession(const FBlueprintSessionResult &SessionResult)
+{
+    IOnlineSubsystem *Subsystem = IOnlineSubsystem::Get();
+    if (!Subsystem)
+        return;
+
+    IOnlineSessionPtr SessionInterface = Subsystem->GetSessionInterface();
+    if (!SessionInterface.IsValid())
+        return;
+
+    APlayerController *PC = GetWorld()->GetFirstPlayerController();
+    if (!PC)
+        return;
+
+    JoinSessionCompleteHandle = SessionInterface->AddOnJoinSessionCompleteDelegate_Handle(
+        FOnJoinSessionCompleteDelegate::CreateUObject(this, &UADITLOIS_GameInstance::OnJoinSessionComplete));
+
+    SessionInterface->JoinSession(*PC->GetLocalPlayer()->GetPreferredUniqueNetId(), NAME_GameSession, SessionResult.OnlineResult);
+}
+
+void UADITLOIS_GameInstance::OnJoinSessionComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result)
+{
+    IOnlineSubsystem *Subsystem = IOnlineSubsystem::Get();
+    if (!Subsystem)
+        return;
+
+    IOnlineSessionPtr SessionInterface = Subsystem->GetSessionInterface();
+    if (!SessionInterface.IsValid())
+        return;
+
+    // Clean up the delegate
+    SessionInterface->ClearOnJoinSessionCompleteDelegate_Handle(JoinSessionCompleteHandle);
+
+    FString ConnectString;
+    if (SessionInterface->GetResolvedConnectString(SessionName, ConnectString))
+    {
+        APlayerController *PC = GetWorld()->GetFirstPlayerController();
+        if (PC)
+        {
+            PC->ClientTravel(ConnectString, TRAVEL_Absolute);
+        }
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("Could not get resolved connect string."));
+    }
+}
+

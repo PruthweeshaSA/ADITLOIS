@@ -6,9 +6,6 @@
 #include "CreateSessionCallbackProxyAdvanced.h"
 #include "ADITLOIS_GameInstance.generated.h"
 
-class UCreateSessionCallbackProxyAdvanced;
-class UWorld;
-
 UCLASS()
 class ADITLOIS_API UADITLOIS_GameInstance : public UGameInstance
 {
@@ -20,12 +17,21 @@ public:
     UFUNCTION(BlueprintCallable)
     void HostGameSession(FName SessionName, int32 MaxPlayers);
 
-    UPROPERTY()
-    UCreateSessionCallbackProxyAdvanced* StoredProxy;
+    UFUNCTION(BlueprintCallable)
+    void JoinGameSession(const FBlueprintSessionResult &SessionResult);
 
     UFUNCTION()
     void OnSessionCreatedSuccess();
 
     UFUNCTION()
     void OnSessionCreatedFailure();
+
+    
+
+private:
+    UCreateSessionCallbackProxyAdvanced *StoredProxy;
+
+    FDelegateHandle JoinSessionCompleteHandle;
+
+    void OnJoinSessionComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result);
 };
