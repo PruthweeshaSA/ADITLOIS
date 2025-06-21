@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 using UnrealBuildTool;
+using System.IO;
 
 public class ADITLOIS : ModuleRules
 {
@@ -8,9 +9,28 @@ public class ADITLOIS : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "AIModule", "Networking", "UMG" });
+		PublicIncludePaths.AddRange(new string[] {
+			Path.Combine(ModuleDirectory, "Public")
+		});
 
-		PrivateDependencyModuleNames.AddRange(new string[] { });
+		PublicDependencyModuleNames.AddRange(new string[] {
+			"Core",
+			"CoreUObject",
+			"Engine",
+			"InputCore",
+			"EnhancedInput",
+			"AIModule",
+			"Networking",
+			"UMG",
+			"OnlineSubsystem",
+			"OnlineSubsystemUtils",
+			"AdvancedSessions",
+			"OnlineBlueprintSupport"
+		});
+
+		PrivateDependencyModuleNames.AddRange(new string[] {
+			"OnlineSubsystem",
+			"OnlineSubsystemSteam" });
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

@@ -10,6 +10,6 @@ public class ADITLOISTarget : TargetRules
 		Type = TargetType.Game;
 		DefaultBuildSettings = BuildSettingsVersion.V4;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_3;
-		ExtraModuleNames.Add("ADITLOIS");
+		ExtraModuleNames.AddRange(new string[] { "ADITLOIS", "AdvancedSessions", "OnlineBlueprintSupport" });
 	}
 }

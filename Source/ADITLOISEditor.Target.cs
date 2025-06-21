@@ -10,6 +10,6 @@ public class ADITLOISEditorTarget : TargetRules
 		Type = TargetType.Editor;
 		DefaultBuildSettings = BuildSettingsVersion.V4;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_3;
-		ExtraModuleNames.Add("ADITLOIS");
+		ExtraModuleNames.AddRange(new string[] { "ADITLOIS", "AdvancedSessions", "OnlineBlueprintSupport" });
 	}
 }
