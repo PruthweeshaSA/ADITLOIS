@@ -175,10 +175,7 @@ void AADITLOIS_PlayerController::ServerOnPossess_Implementation(APawn *aPawn)
     {
         Cast<UCharacterMovementComponent>(Cast<AADITLOIS_PlayerCharacter>(aPawn)->GetMovementComponent())->MaxWalkSpeed = 300.0;
     }
-    if (GEngine)
-    {
-        GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor(64, 192, 64), TEXT("Server is running OnPossess"));
-    }
+    UE_LOG(LogTemp, Log, TEXT("Server is running OnPossess"));
 }
 
 void AADITLOIS_PlayerController::SetupInputComponent()
@@ -256,10 +253,6 @@ void AADITLOIS_PlayerController::OnActionLook(const FInputActionValue &Value)
 
 void AADITLOIS_PlayerController::ServerOnActionLook_Implementation(const FInputActionValue &Value, FRotator actorRotation)
 {
-    // if (GEngine)
-    // {
-    //     GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor(0, 255, 0), TEXT("Server received RPC to look around"));
-    // }
 
     FVector2D look = Value.Get<FVector2D>();
     this->GetPawn()->AddControllerYawInput(look.X);
@@ -288,11 +281,6 @@ void AADITLOIS_PlayerController::OnActionMove(const FInputActionValue &Value)
 
 void AADITLOIS_PlayerController::ServerOnActionMove_Implementation(const FInputActionValue &Value)
 {
-    // if (GEngine)
-    // {
-    //     GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor(0, 255, 0), TEXT("Server received RPC to move"));
-    // }
-
     FVector2D move = Value.Get<FVector2D>();
     this->GetPawn()->SetActorRotation(FRotator(this->GetPawn()->GetActorRotation().Pitch,
                                                this->GetPawn()->GetControlRotation().Yaw,

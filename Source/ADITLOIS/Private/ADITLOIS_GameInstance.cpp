@@ -26,19 +26,11 @@ void UADITLOIS_GameInstance::HostGameSession(FName SessionName, int32 MaxPlayers
     if (!PC)
     {
         UE_LOG(LogTemp, Error, TEXT("Failed to get PlayerController."));
-        if (GEngine)
-        {
-            GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, TEXT("Failed to get PlayerController!"));
-        }
         return;
     }
     else
     {
         UE_LOG(LogTemp, Error, TEXT("Got PlayerController."));
-        if (GEngine)
-        {
-            GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, TEXT("Got PlayerController!"));
-        }
     }
 
     StoredProxy = UCreateSessionCallbackProxyAdvanced::CreateAdvancedSession(
@@ -71,11 +63,6 @@ void UADITLOIS_GameInstance::HostGameSession(FName SessionName, int32 MaxPlayers
         StoredProxy->OnFailure.AddDynamic(this, &UADITLOIS_GameInstance::OnSessionCreatedFailure);
 
         UE_LOG(LogTemp, Log, TEXT("Routed OnSuccess and OnFailure to functions."));
-        if (GEngine)
-        {
-            GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Yellow, TEXT("Routed OnSuccess and OnFailure to functions!"));
-        }
-
         UE_LOG(LogTemp, Warning, TEXT("StoredProxy is valid and bound, now activating session creation..."));
 
         // ✅ ACTIVATE the proxy manually
@@ -83,11 +70,6 @@ void UADITLOIS_GameInstance::HostGameSession(FName SessionName, int32 MaxPlayers
     }
     else
     {
-        if (GEngine)
-        {
-            GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(64, 255, 64), TEXT("Session creation proxy was null!"));
-        }
-
         UE_LOG(LogTemp, Error, TEXT("Session creation proxy was null."));
     }
 }
@@ -95,10 +77,6 @@ void UADITLOIS_GameInstance::HostGameSession(FName SessionName, int32 MaxPlayers
 void UADITLOIS_GameInstance::OnSessionCreatedSuccess()
 {
     UE_LOG(LogTemp, Log, TEXT("Session created successfully"));
-    if (GEngine)
-    {
-        GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(64, 255, 64), TEXT("Session created successfully!"));
-    }
 
     // Correct string: just path, no class prefix or suffix
     FSoftObjectPath LevelPath(TEXT("/Game/Assets/Levels/UnrealsIdeaofAnEmptyLevel"));
@@ -116,10 +94,6 @@ void UADITLOIS_GameInstance::OnSessionCreatedSuccess()
     else
     {
         UE_LOG(LogTemp, Error, TEXT("Level asset failed to load from path: %s"), *LevelPath.ToString());
-        if (GEngine)
-        {
-            GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("Level asset failed to load!"));
-        }
     }
 
     // Prevents memory leak
@@ -133,11 +107,6 @@ void UADITLOIS_GameInstance::OnSessionCreatedSuccess()
 void UADITLOIS_GameInstance::OnSessionCreatedFailure()
 {
     UE_LOG(LogTemp, Error, TEXT("Failed to create session"));
-    if (GEngine)
-    {
-        GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(64, 255, 64), TEXT("Failed to create session!"));
-    }
-
     // Prevents memory leak
     if (StoredProxy)
     {

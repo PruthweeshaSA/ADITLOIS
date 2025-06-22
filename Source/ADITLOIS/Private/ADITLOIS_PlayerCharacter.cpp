@@ -68,11 +68,6 @@ void AADITLOIS_PlayerCharacter::Tick(float DeltaTime)
 
 	TObjectPtr<APlayerController> playerController = Cast<APlayerController>(GetController());
 
-	// startPoint = this->GetActorLocation() + (springArm ? springArm->GetRelativeLocation() : FVector(0.0f));
-	// startPoint = startPoint + (camera ? camera->GetRelativeLocation() : FVector(0.0f));
-	// viewRotation = playerController ? playerController->GetControlRotation() : FRotator(0.0);
-	// endPoint = startPoint + (viewRotation.Vector()) * (springArm ? springArm->TargetArmLength + 100.0f : 400.0f);
-
 	if (playerController)
 	{
 		playerController->GetPlayerViewPoint(startPoint, viewRotation);
@@ -86,14 +81,6 @@ void AADITLOIS_PlayerCharacter::Tick(float DeltaTime)
 	bool bHit = GetWorld()->LineTraceSingleByChannel(this->hitResult, startPoint, endPoint, ECC_Visibility, TraceParams);
 
 	TObjectPtr<APlayerState> playerState = playerController ? playerController->PlayerState : nullptr;
-
-	// if (GEngine && playerState)
-	// {
-	// 	int32 playerId = playerState->GetPlayerId();
-	// 	FString formattedStartVector = FString::Printf(TEXT("X: %.2f Y: %.2f Z: %.2f"), startPoint.X, startPoint.Y, startPoint.Z);
-	// 	FString formattedEndVector = FString::Printf(TEXT("X: %.2f Y: %.2f Z: %.2f"), endPoint.X, endPoint.Y, endPoint.Z);
-	// 	GEngine->AddOnScreenDebugMessage(playerId, 2.0f, FColor(32, 64, 128), FString::Printf(TEXT("START: %s ----> END: %s"), *formattedStartVector, *formattedEndVector));
-	// }
 
 	if (HasAuthority())
 	{

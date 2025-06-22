@@ -14,18 +14,10 @@ UPauseMenu_Widget::UPauseMenu_Widget(const FObjectInitializer &ObjectInitializer
     if (controllerClass)
     {
         UE_LOG(LogTemp, Log, TEXT("playerControllerClass BluePrint found: %s"), *controllerClass->GetName());
-        if (GEngine)
-        {
-            GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(0, 192, 128), controllerClass->GetName());
-            GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(64, 255, 64), TEXT("controllerClass found!"));
-        }
     }
     else
     {
-        if (GEngine)
-        {
-            GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(255, 64, 64), TEXT("controllerClass not found!!!!!!!!!"));
-        }
+        UE_LOG(LogTemp, Log, TEXT("playerControllerClass BluePrint not found."));
     }
 }
 
@@ -48,10 +40,6 @@ void UPauseMenu_Widget::NativeConstruct()
 void UPauseMenu_Widget::OnButtonHitResume()
 {
     UE_LOG(LogTemp, Log, TEXT("Resume called"));
-    if (GEngine)
-    {
-        GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(64, 255, 64), TEXT("Resume called"));
-    }
     AADITLOIS_PlayerController *MyPC = Cast<AADITLOIS_PlayerController>(GetOwningPlayer());
     UGameplayStatics::SetGamePaused(GetWorld(), false);
     if (MyPC)
@@ -66,26 +54,14 @@ void UPauseMenu_Widget::OnButtonHitResume()
 void UPauseMenu_Widget::OnButtonHitSaveGame()
 {
     UE_LOG(LogTemp, Log, TEXT("Save Game called"));
-    if (GEngine)
-    {
-        GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(64, 255, 64), TEXT("Save Game called"));
-    }
     if (controllerClass)
     {
         UE_LOG(LogTemp, Log, TEXT("playerControllerClass BluePrint found: %s"), *controllerClass->GetName());
-        if (GEngine)
-        {
-            GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(0, 192, 128), controllerClass->GetName());
-            GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(64, 255, 64), TEXT("controllerClass found!"));
-        }
 
         AADITLOIS_PlayerController *MyPC = Cast<AADITLOIS_PlayerController>(GetOwningPlayer());
         if (MyPC)
         {
-            if (GEngine)
-            {
-                GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(64, 255, 64), TEXT("Save Game called via native ControllerClass"));
-            }
+            UE_LOG(LogTemp, Log, TEXT("Save Game called via native ControllerClass"));
             MyPC->OnActionSaveGame();
         }
     }
@@ -94,23 +70,14 @@ void UPauseMenu_Widget::OnButtonHitSaveGame()
 void UPauseMenu_Widget::OnButtonHitLoadGame()
 {
     UE_LOG(LogTemp, Log, TEXT("Save Game called"));
-    if (GEngine)
-    {
-        GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(64, 255, 64), TEXT("Load Game called"));
-    }
     if (controllerClass)
     {
         UE_LOG(LogTemp, Log, TEXT("playerControllerClass BluePrint found: %s"), *controllerClass->GetName());
-        if (GEngine)
-        {
-            GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(0, 192, 128), controllerClass->GetName());
-            GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(64, 255, 64), TEXT("controllerClass found!"));
-        }
 
         AADITLOIS_PlayerController *MyPC = Cast<AADITLOIS_PlayerController>(GetOwningPlayer());
         if (MyPC)
         {
-            GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(64, 255, 64), TEXT("Load Game called via native ControllerClass"));
+            UE_LOG(LogTemp, Log, TEXT("Load Game called via native ControllerClass"));
             MyPC->OnActionLoadGame();
         }
     }

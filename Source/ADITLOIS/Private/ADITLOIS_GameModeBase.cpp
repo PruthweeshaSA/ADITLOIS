@@ -15,19 +15,11 @@ AADITLOIS_GameModeBase::AADITLOIS_GameModeBase()
     {
         DefaultPawnClass = characterClass;
         UE_LOG(LogTemp, Log, TEXT("characterClass BluePrint found: %s"), *characterClass->GetName());
-        if (GEngine)
-        {
-            GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(0, 192, 128), characterClass->GetName());
-            GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(64, 255, 64), TEXT("characterClass found!"));
-        }
     }
     else
     {
         DefaultPawnClass = AADITLOIS_PlayerCharacter::StaticClass();
-        if (GEngine)
-        {
-            GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(255, 64, 64), TEXT("characterClass not found!!!!!!!!!"));
-        }
+        UE_LOG(LogTemp, Error, TEXT("characterClass BluePrint not found."));
     }
 
     static ConstructorHelpers::FClassFinder<APlayerController> controllerClassFinder(TEXT("'/Game/Blueprints/PlayerController_Blueprints/BP_ADITLOIS_PlayerController'"));
@@ -36,19 +28,11 @@ AADITLOIS_GameModeBase::AADITLOIS_GameModeBase()
     {
         PlayerControllerClass = controllerClass;
         UE_LOG(LogTemp, Log, TEXT("playerControllerClass BluePrint found: %s"), *controllerClass->GetName());
-        if (GEngine)
-        {
-            GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(0, 192, 128), controllerClass->GetName());
-            GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(64, 255, 64), TEXT("controllerClass found!"));
-        }
     }
     else
     {
         PlayerControllerClass = AADITLOIS_PlayerController::StaticClass();
-        if (GEngine)
-        {
-            GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(255, 64, 64), TEXT("controllerClass not found!!!!!!!!!"));
-        }
+        UE_LOG(LogTemp, Error, TEXT("playerControllerClass BluePrint not found."));
     }
 
     static ConstructorHelpers::FClassFinder<AHUD> hudClassFinder(TEXT("'/Game/Blueprints/Hud_Blueprints/BP_ADITLOIS_HUD'"));
@@ -57,18 +41,10 @@ AADITLOIS_GameModeBase::AADITLOIS_GameModeBase()
     {
         HUDClass = hudBlueprintClass;
         UE_LOG(LogTemp, Log, TEXT("hudClass BluePrint found: %s"), *hudBlueprintClass->GetName());
-        if (GEngine)
-        {
-            GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(0, 192, 128), hudBlueprintClass->GetName());
-            GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(64, 255, 64), TEXT("hudBlueprintClass found!"));
-        }
     }
     else
     {
-        if (GEngine)
-        {
-            GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(255, 64, 64), TEXT("hudBlueprintClass not found!!!!!!!!!"));
-        }
+        UE_LOG(LogTemp, Error, TEXT("hudClass BluePrint not found."));
     }
 }
 
@@ -95,18 +71,10 @@ void AADITLOIS_GameModeBase::SpawnBots()
         FRotator spawnRotator = FRotator::ZeroRotator;
         TObjectPtr<AAIController> botAdded = Cast<AAIController>(GetWorld()->SpawnActor<AAIController>(AAIController::StaticClass(), spawnLocation, spawnRotator));
         bots.Add(botAdded);
-        if (GEngine)
-        {
-            GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(0, 192, 128), FString::Printf(TEXT("%d"), bots.Num()));
-        }
         spawnLocation = FindPlayerStart(botAdded)->GetActorLocation();
         spawnRotator = FindPlayerStart(botAdded)->GetActorRotation();
         TObjectPtr<AADITLOIS_PlayerCharacter> botCharacterAdded = Cast<AADITLOIS_PlayerCharacter>(GetWorld()->SpawnActor<AADITLOIS_PlayerCharacter>(characterClass, spawnLocation, spawnRotator));
         botAdded->Possess(botCharacterAdded);
-        if (GEngine && botCharacterAdded && characterClass)
-        {
-            GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor(32, 32, 32), FString::Printf(TEXT("%d"), botCharacterAdded->GetActorLocation().Z));
-        }
     }
 }
 
