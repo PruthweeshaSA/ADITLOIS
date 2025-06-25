@@ -1,7 +1,9 @@
 Binaries/*
 Content/*
 !Content/Blueprints/
-!Conten/Blueprints/**
+!Content/Blueprints/**
+!Content/Assets/**
+!Content/Assets/
 Intermediate/*
 Saved/*
 DerivedDataCache/*
