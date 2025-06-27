@@ -254,18 +254,7 @@ void AADITLOIS_PlayerController::SetupInputComponent()
 void AADITLOIS_PlayerController::OnActionLook(const FInputActionValue &Value)
 {
     FRotator actorRotation = this->GetPawn()->GetActorRotation();
-    if (true || (this->HasAuthority()))
-    {
-        FVector2D look = Value.Get<FVector2D>();
-        this->GetPawn()->AddControllerYawInput(look.X);
-        this->GetPawn()->AddControllerPitchInput(look.Y);
-
-        actorRotation = this->GetPawn()->GetActorRotation();
-    }
-    if (!(this->HasAuthority()))
-    {
-        ServerOnActionLook(Value, actorRotation);
-    }
+    ServerOnActionLook(Value, actorRotation);
 }
 
 void AADITLOIS_PlayerController::ServerOnActionLook_Implementation(const FInputActionValue &Value, FRotator actorRotation)
@@ -281,19 +270,7 @@ void AADITLOIS_PlayerController::ServerOnActionLook_Implementation(const FInputA
 
 void AADITLOIS_PlayerController::OnActionMove(const FInputActionValue &Value)
 {
-    if (true || (this->HasAuthority()))
-    {
-        FVector2D move = Value.Get<FVector2D>();
-        this->GetPawn()->SetActorRotation(FRotator(this->GetPawn()->GetActorRotation().Pitch,
-                                                   this->GetPawn()->GetControlRotation().Yaw,
-                                                   this->GetPawn()->GetActorRotation().Roll));
-        this->GetPawn()->AddMovementInput(this->GetPawn()->GetActorForwardVector(), move.Y);
-        this->GetPawn()->AddMovementInput(this->GetPawn()->GetActorRightVector(), move.X);
-    }
-    if (!(this->HasAuthority()))
-    {
-        ServerOnActionMove(Value);
-    }
+    ServerOnActionMove(Value);
 }
 
 void AADITLOIS_PlayerController::ServerOnActionMove_Implementation(const FInputActionValue &Value)
@@ -308,17 +285,8 @@ void AADITLOIS_PlayerController::ServerOnActionMove_Implementation(const FInputA
 
 void AADITLOIS_PlayerController::OnActionJump(const FInputActionValue &Value)
 {
-    if (true || (this->HasAuthority()))
-    {
-        if (this->GetPawn())
-        {
-            Cast<AADITLOIS_PlayerCharacter>(this->GetPawn())->Jump();
-        }
-    }
-    if (!(this->HasAuthority()))
-    {
-        ServerOnActionJump(Value);
-    }
+
+    ServerOnActionJump(Value);
 }
 
 void AADITLOIS_PlayerController::ServerOnActionJump_Implementation(const FInputActionValue &Value)
@@ -331,14 +299,8 @@ void AADITLOIS_PlayerController::ServerOnActionJump_Implementation(const FInputA
 
 void AADITLOIS_PlayerController::OnActionSprintPress(const FInputActionValue &Value)
 {
-    if (true || (this->HasAuthority()))
-    {
-        Cast<UCharacterMovementComponent>(Cast<AADITLOIS_PlayerCharacter>(this->GetPawn())->GetMovementComponent())->MaxWalkSpeed = 600.0;
-    }
-    if (!(this->HasAuthority()))
-    {
-        ServerOnActionSprintPress(Value);
-    }
+
+    ServerOnActionSprintPress(Value);
 }
 
 void AADITLOIS_PlayerController::ServerOnActionSprintPress_Implementation(const FInputActionValue &Value)
@@ -348,14 +310,8 @@ void AADITLOIS_PlayerController::ServerOnActionSprintPress_Implementation(const 
 
 void AADITLOIS_PlayerController::OnActionSprintRelease(const FInputActionValue &Value)
 {
-    if (true || (this->HasAuthority()))
-    {
-        Cast<UCharacterMovementComponent>(Cast<AADITLOIS_PlayerCharacter>(this->GetPawn())->GetMovementComponent())->MaxWalkSpeed = 300.0;
-    }
-    if (!(this->HasAuthority()))
-    {
-        ServerOnActionSprintRelease(Value);
-    }
+
+    ServerOnActionSprintRelease(Value);
 }
 
 void AADITLOIS_PlayerController::ServerOnActionSprintRelease_Implementation(const FInputActionValue &Value)
@@ -365,25 +321,8 @@ void AADITLOIS_PlayerController::ServerOnActionSprintRelease_Implementation(cons
 
 void AADITLOIS_PlayerController::OnActionInteract(const FInputActionValue &Value)
 {
-    if (true || (this->HasAuthority()))
-    {
-        if (this->GetPawn())
-        {
-            TObjectPtr<AActor> actorToInteractWith = Cast<AADITLOIS_PlayerCharacter>(this->GetPawn())->interactionTarget;
-            if (actorToInteractWith && actorToInteractWith->GetIsReplicated())
-            {
-                if (actorToInteractWith->GetClass()->ImplementsInterface(UADITLOIS_Interactable_Interface::StaticClass()))
-                {
-                    actorToInteractWith->Destroy();
-                    this->playerScore += 1;
-                }
-            }
-        }
-    }
-    if (!(this->HasAuthority()))
-    {
-        ServerOnActionInteract(Value);
-    }
+
+    ServerOnActionInteract(Value);
 }
 
 void AADITLOIS_PlayerController::ServerOnActionInteract_Implementation(const FInputActionValue &Value)
@@ -404,42 +343,8 @@ void AADITLOIS_PlayerController::ServerOnActionInteract_Implementation(const FIn
 
 void AADITLOIS_PlayerController::OnActionCameraZoom(const FInputActionValue &Value)
 {
-    if (true || this->HasAuthority())
-    {
-        if (this->GetPawn() == nullptr)
-        {
-            return;
-        }
-        TObjectPtr<AADITLOIS_PlayerCharacter> pCharacter = Cast<AADITLOIS_PlayerCharacter>(this->GetPawn());
-        float move = Value.Get<float>();
-        TObjectPtr<USpringArmComponent> characterSpringArm = pCharacter->springArm;
-        if (move > 0.0f)
-        {
-            characterSpringArm->TargetArmLength = characterSpringArm->TargetArmLength >= 150.0f ? characterSpringArm->TargetArmLength - 30.0f : 0.0f;
-            if (characterSpringArm->TargetArmLength == 0.0f)
-            {
-                pCharacter->bUseControllerRotationYaw = true;
-                characterSpringArm->AttachToComponent(pCharacter->GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("EyeSocket")));
-            }
-        }
-        else if (move < 0.0f)
-        {
-            characterSpringArm->TargetArmLength = characterSpringArm->TargetArmLength < 420.0f ? characterSpringArm->TargetArmLength + 30.0f : 450.0f;
-            if (characterSpringArm->TargetArmLength < 120.0f)
-            {
-                characterSpringArm->TargetArmLength = 120.0f;
-            }
-            pCharacter->bUseControllerRotationYaw = false;
-            characterSpringArm->AttachToComponent(pCharacter->GetRootComponent(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("EyeSocket")));
-        }
-        float yOffset = characterSpringArm->TargetArmLength >= 120.0f ? 10.0f + (characterSpringArm->TargetArmLength / 6.0f) : 0.0f;
-        float zOffset = characterSpringArm->TargetArmLength >= 120.0f ? 70.0f : 0.0f;
-        characterSpringArm->SocketOffset = FVector(0.0f, yOffset, zOffset);
-    }
-    if (!(this->HasAuthority()))
-    {
-        ServerOnActionCameraZoom(Value);
-    }
+
+    ServerOnActionCameraZoom(Value);
 }
 
 void AADITLOIS_PlayerController::ServerOnActionCameraZoom_Implementation(const FInputActionValue &Value)
@@ -479,14 +384,8 @@ void AADITLOIS_PlayerController::ServerOnActionCameraZoom_Implementation(const F
 
 void AADITLOIS_PlayerController::OnActionSaveGame()
 {
-    if (this->HasAuthority())
-    {
-        Cast<AADITLOIS_GameModeBase>(this->GetWorld()->GetAuthGameMode())->SaveGame(this);
-    }
-    else
-    {
-        ServerOnActionSaveGame();
-    }
+
+    ServerOnActionSaveGame();
 }
 
 void AADITLOIS_PlayerController::ServerOnActionSaveGame_Implementation()
@@ -496,14 +395,8 @@ void AADITLOIS_PlayerController::ServerOnActionSaveGame_Implementation()
 
 void AADITLOIS_PlayerController::OnActionLoadGame()
 {
-    if (this->HasAuthority())
-    {
-        Cast<AADITLOIS_GameModeBase>(this->GetWorld()->GetAuthGameMode())->LoadGame(this);
-    }
-    else
-    {
-        ServerOnActionLoadGame();
-    }
+
+    ServerOnActionLoadGame();
     this->SetControlRotation(this->playerControllerRotation);
 }
 
@@ -514,12 +407,6 @@ void AADITLOIS_PlayerController::ServerOnActionLoadGame_Implementation()
 
 void AADITLOIS_PlayerController::OnActionSwitchCharacter()
 {
-    if (this->HasAuthority())
-    {
-        // Cast<AADITLOIS_GameModeBase>(this->GetWorld()->GetAuthGameMode())->LoadGame(this);
-        UE_LOG(LogTemp, Warning, TEXT("Called Switch Character."));
-    }
-
     ServerOnActionSwitchCharacter();
 }
 
@@ -527,20 +414,21 @@ void AADITLOIS_PlayerController::ServerOnActionSwitchCharacter_Implementation()
 {
     UE_LOG(LogTemp, Warning, TEXT("Called Server Switch Character."));
 
-    FString Path = "/Game/Blueprints/Character_Blueprints/BP_ADITLOIS_PlayerCharacter_Lioness.BP_ADITLOIS_PlayerCharacter_Lioness_C";
-    UClass *NewPawnClass = LoadClass<APawn>(nullptr, *Path);
-    if (!NewPawnClass)
-        return;
+    FString LionessPath = "/Game/Blueprints/Character_Blueprints/BP_ADITLOIS_PlayerCharacter_Lioness.BP_ADITLOIS_PlayerCharacter_Lioness_C";
+    FString ErectusPath = "/Game/Blueprints/Character_Blueprints/BP_ADITLOIS_PlayerCharacter.BP_ADITLOIS_PlayerCharacter_C";
 
     APawn *ExistingPawn = this->GetPawn();
     if (!ExistingPawn)
+        return;
+
+    UClass *NewPawnClass = LoadClass<APawn>(nullptr, *LionessPath) == (ExistingPawn->GetClass()) ? LoadClass<APawn>(nullptr, *ErectusPath) : LoadClass<APawn>(nullptr, *LionessPath);
+    if (!NewPawnClass)
         return;
 
     UWorld *CurrentWorld = this->GetWorld();
     if (!CurrentWorld)
         return;
 
-    
     // Unpossess before destroying
 
     FVector NewSpawnLocation = ExistingPawn ? ExistingPawn->GetActorLocation() : FVector::ZeroVector;
