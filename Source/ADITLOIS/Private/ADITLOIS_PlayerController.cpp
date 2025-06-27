@@ -122,6 +122,18 @@ AADITLOIS_PlayerController::AADITLOIS_PlayerController()
         UE_LOG(LogTemp, Error, TEXT("Failed to find Input Load Game"));
     }
 
+    const TCHAR *switchCharacterInputActionReferencePath = TEXT("InputAction'/Game/Assets/Inputs/IA_SwitchCharacter.IA_SwitchCharacter'");
+    static ConstructorHelpers::FObjectFinder<UInputAction> InputActionSwitchCharacterFinder(switchCharacterInputActionReferencePath);
+    if (InputActionSwitchCharacterFinder.Succeeded())
+    {
+        ActionSwitchCharacter = InputActionSwitchCharacterFinder.Object;
+        UE_LOG(LogTemp, Log, TEXT("Input Action Switch character found: %s"), *ActionSwitchCharacter->GetName());
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("Failed to find Input Switch Character"));
+    }
+
     const TCHAR *pauseGameInputActionReferencePath = TEXT("InputAction'/Game/Assets/Inputs/IA_PauseGame.IA_PauseGame'");
     static ConstructorHelpers::FObjectFinder<UInputAction> InputActionPauseGameFinder(pauseGameInputActionReferencePath);
     if (InputActionPauseGameFinder.Succeeded())
@@ -226,6 +238,11 @@ void AADITLOIS_PlayerController::SetupInputComponent()
     if (ActionLoadGame)
     {
         enhancedInputComponent->BindAction(ActionLoadGame, ETriggerEvent::Triggered, this, &AADITLOIS_PlayerController::OnActionLoadGame);
+    }
+
+    if (ActionSwitchCharacter)
+    {
+        enhancedInputComponent->BindAction(ActionSwitchCharacter, ETriggerEvent::Triggered, this, &AADITLOIS_PlayerController::OnActionSwitchCharacter);
     }
 
     if (ActionPauseGame)
@@ -493,6 +510,53 @@ void AADITLOIS_PlayerController::OnActionLoadGame()
 void AADITLOIS_PlayerController::ServerOnActionLoadGame_Implementation()
 {
     Cast<AADITLOIS_GameModeBase>(this->GetWorld()->GetAuthGameMode())->LoadGame(this);
+}
+
+void AADITLOIS_PlayerController::OnActionSwitchCharacter()
+{
+    if (this->HasAuthority())
+    {
+        // Cast<AADITLOIS_GameModeBase>(this->GetWorld()->GetAuthGameMode())->LoadGame(this);
+        UE_LOG(LogTemp, Warning, TEXT("Called Switch Character."));
+    }
+
+    ServerOnActionSwitchCharacter();
+}
+
+void AADITLOIS_PlayerController::ServerOnActionSwitchCharacter_Implementation()
+{
+    UE_LOG(LogTemp, Warning, TEXT("Called Server Switch Character."));
+
+    FString Path = "/Game/Blueprints/Character_Blueprints/BP_ADITLOIS_PlayerCharacter_Lioness.BP_ADITLOIS_PlayerCharacter_Lioness_C";
+    UClass *NewPawnClass = LoadClass<APawn>(nullptr, *Path);
+    if (!NewPawnClass)
+        return;
+
+    APawn *ExistingPawn = this->GetPawn();
+    if (!ExistingPawn)
+        return;
+
+    UWorld *CurrentWorld = this->GetWorld();
+    if (!CurrentWorld)
+        return;
+
+    
+    // Unpossess before destroying
+
+    FVector NewSpawnLocation = ExistingPawn ? ExistingPawn->GetActorLocation() : FVector::ZeroVector;
+    FRotator NewSpawnRotation = ExistingPawn ? ExistingPawn->GetActorRotation() : FRotator::ZeroRotator;
+    this->UnPossess();
+    ExistingPawn->Destroy(); // Safely destroy after
+
+    FActorSpawnParameters SpawnParams;
+    SpawnParams.Owner = this;
+    SpawnParams.Instigator = ExistingPawn;
+
+    APawn *NewPawn = CurrentWorld->SpawnActor<APawn>(NewPawnClass, NewSpawnLocation, NewSpawnRotation, SpawnParams);
+    if (!NewPawn)
+        return;
+
+    this->Possess(NewPawn); // Replicated automatically to all clients
 }
 
 void AADITLOIS_PlayerController::OnActionPauseGame()

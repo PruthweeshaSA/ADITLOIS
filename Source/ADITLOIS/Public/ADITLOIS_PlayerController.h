@@ -77,6 +77,9 @@ private:
 	TObjectPtr<UInputAction> ActionLoadGame = nullptr;
 
 	UPROPERTY(EditAnywhere)
+	TObjectPtr<UInputAction> ActionSwitchCharacter = nullptr;
+
+	UPROPERTY(EditAnywhere)
 	TObjectPtr<UInputAction> ActionPauseGame = nullptr;
 
 public:
@@ -124,6 +127,9 @@ public:
 	void OnActionLoadGame();
 
 	UFUNCTION(BlueprintCallable)
+	void OnActionSwitchCharacter();
+
+	UFUNCTION(BlueprintCallable)
 	void OnActionPauseGame();
 
 private:
@@ -153,4 +159,7 @@ private:
 
 	UFUNCTION(Server, Reliable, Blueprintable)
 	void ServerOnActionLoadGame();
+
+	UFUNCTION(Server, Reliable, Blueprintable)
+	void ServerOnActionSwitchCharacter();
 };
