@@ -254,75 +254,41 @@ void AADITLOIS_PlayerController::SetupInputComponent()
 void AADITLOIS_PlayerController::OnActionLook(const FInputActionValue &Value)
 {
     FRotator actorRotation = this->GetPawn()->GetActorRotation();
-    if (true || (this->HasAuthority()))
-    {
-        FVector2D look = Value.Get<FVector2D>();
-        this->GetPawn()->AddControllerYawInput(look.X);
-        this->GetPawn()->AddControllerPitchInput(look.Y);
-
-        actorRotation = this->GetPawn()->GetActorRotation();
-    }
-    if (!(this->HasAuthority()))
-    {
-        ServerOnActionLook(Value, actorRotation);
-    }
-}
-
-void AADITLOIS_PlayerController::ServerOnActionLook_Implementation(const FInputActionValue &Value, FRotator actorRotation)
-{
 
     FVector2D look = Value.Get<FVector2D>();
     this->GetPawn()->AddControllerYawInput(look.X);
     this->GetPawn()->AddControllerPitchInput(look.Y);
+    ServerOnActionLook(this->GetControlRotation(), this->GetPawn()->GetActorRotation());
+}
 
-    this->GetPawn()->SetActorRotation(actorRotation);
-    ForceNetUpdate();
+void AADITLOIS_PlayerController::ServerOnActionLook_Implementation(FRotator controllerRotation, FRotator characterRotation)
+{
+    this->playerControllerRotation = controllerRotation;
+    this->GetPawn()->SetActorRotation(characterRotation);
 }
 
 void AADITLOIS_PlayerController::OnActionMove(const FInputActionValue &Value)
 {
-    if (true || (this->HasAuthority()))
-    {
-        FVector2D move = Value.Get<FVector2D>();
-        this->GetPawn()->SetActorRotation(FRotator(this->GetPawn()->GetActorRotation().Pitch,
-                                                   this->GetPawn()->GetControlRotation().Yaw,
-                                                   this->GetPawn()->GetActorRotation().Roll));
-        this->GetPawn()->AddMovementInput(this->GetPawn()->GetActorForwardVector(), move.Y);
-        this->GetPawn()->AddMovementInput(this->GetPawn()->GetActorRightVector(), move.X);
-    }
-    if (!(this->HasAuthority()))
-    {
-        ServerOnActionMove(Value);
-    }
-}
 
-void AADITLOIS_PlayerController::ServerOnActionMove_Implementation(const FInputActionValue &Value)
-{
     FVector2D move = Value.Get<FVector2D>();
     this->GetPawn()->SetActorRotation(FRotator(this->GetPawn()->GetActorRotation().Pitch,
                                                this->GetPawn()->GetControlRotation().Yaw,
                                                this->GetPawn()->GetActorRotation().Roll));
     this->GetPawn()->AddMovementInput(this->GetPawn()->GetActorForwardVector(), move.Y);
     this->GetPawn()->AddMovementInput(this->GetPawn()->GetActorRightVector(), move.X);
+
+    ServerOnActionMove(this->GetPawn()->GetActorLocation(), this->GetPawn()->GetActorRotation());
+}
+
+void AADITLOIS_PlayerController::ServerOnActionMove_Implementation(FVector characterLocation, FRotator characterRotation)
+{
+    this->GetPawn()->SetActorLocation(characterLocation);
+    this->GetPawn()->SetActorRotation(characterRotation);
 }
 
 void AADITLOIS_PlayerController::OnActionJump(const FInputActionValue &Value)
 {
-    if (true || (this->HasAuthority()))
-    {
-        if (this->GetPawn())
-        {
-            Cast<AADITLOIS_PlayerCharacter>(this->GetPawn())->Jump();
-        }
-    }
-    if (!(this->HasAuthority()))
-    {
-        ServerOnActionJump(Value);
-    }
-}
 
-void AADITLOIS_PlayerController::ServerOnActionJump_Implementation(const FInputActionValue &Value)
-{
     if (this->GetPawn())
     {
         Cast<AADITLOIS_PlayerCharacter>(this->GetPawn())->Jump();

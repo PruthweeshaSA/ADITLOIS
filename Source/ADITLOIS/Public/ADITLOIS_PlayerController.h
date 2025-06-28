@@ -133,14 +133,11 @@ public:
 	void OnActionPauseGame();
 
 private:
-	UFUNCTION(Server, Reliable, Blueprintable)
-	void ServerOnActionLook(const FInputActionValue &Value, FRotator actorRotation);
+	UFUNCTION(Server, Unreliable, Blueprintable)
+	void ServerOnActionLook(FRotator controllerRotation, FRotator characterRotation);
 
-	UFUNCTION(Server, Reliable, Blueprintable)
-	void ServerOnActionMove(const FInputActionValue &Value);
-
-	UFUNCTION(Server, Reliable, Blueprintable)
-	void ServerOnActionJump(const FInputActionValue &Value);
+	UFUNCTION(Server, Unreliable, Blueprintable)
+	void ServerOnActionMove(FVector characterLocation, FRotator characterRotation);
 
 	UFUNCTION(Server, Reliable, Blueprintable)
 	void ServerOnActionSprintPress(const FInputActionValue &Value);
