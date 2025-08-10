@@ -171,7 +171,10 @@ void AADITLOIS_PlayerController::OnPossess(APawn *aPawn)
 {
     Super::OnPossess(aPawn);
 
-    playerCharacter = Cast<AADITLOIS_PlayerCharacter>(aPawn);
+    TObjectPtr<AADITLOIS_PlayerCharacter> pCharacter = Cast<AADITLOIS_PlayerCharacter>(aPawn);
+    if (!pCharacter)
+        return;
+    playerCharacter = pCharacter;
     if (playerCharacter != nullptr)
     {
         Cast<UCharacterMovementComponent>(playerCharacter->GetMovementComponent())->MaxWalkSpeed = 300.0;
@@ -183,9 +186,12 @@ void AADITLOIS_PlayerController::OnPossess(APawn *aPawn)
 
 void AADITLOIS_PlayerController::ServerOnPossess_Implementation(APawn *aPawn)
 {
-    if (Cast<AADITLOIS_PlayerCharacter>(aPawn) != nullptr)
+    TObjectPtr<AADITLOIS_PlayerCharacter> pCharacter = Cast<AADITLOIS_PlayerCharacter>(aPawn);
+    if (!pCharacter)
+        return;
+    if (pCharacter != nullptr)
     {
-        Cast<UCharacterMovementComponent>(Cast<AADITLOIS_PlayerCharacter>(aPawn)->GetMovementComponent())->MaxWalkSpeed = 300.0;
+        Cast<UCharacterMovementComponent>(pCharacter->GetMovementComponent())->MaxWalkSpeed = 300.0;
     }
     UE_LOG(LogTemp, Log, TEXT("Server is running OnPossess"));
 }
@@ -291,7 +297,10 @@ void AADITLOIS_PlayerController::OnActionJump(const FInputActionValue &Value)
 
     if (this->GetPawn())
     {
-        Cast<AADITLOIS_PlayerCharacter>(this->GetPawn())->Jump();
+        TObjectPtr<AADITLOIS_PlayerCharacter> pCharacter = Cast<AADITLOIS_PlayerCharacter>(this->GetPawn());
+        if (!pCharacter)
+            return;
+        pCharacter->Jump();
     }
 }
 
@@ -299,7 +308,10 @@ void AADITLOIS_PlayerController::OnActionSprintPress(const FInputActionValue &Va
 {
     if (true || (this->HasAuthority()))
     {
-        Cast<UCharacterMovementComponent>(Cast<AADITLOIS_PlayerCharacter>(this->GetPawn())->GetMovementComponent())->MaxWalkSpeed = 600.0;
+        TObjectPtr<AADITLOIS_PlayerCharacter> pCharacter = Cast<AADITLOIS_PlayerCharacter>(this->GetPawn());
+        if (!pCharacter)
+            return;
+        Cast<UCharacterMovementComponent>(pCharacter->GetMovementComponent())->MaxWalkSpeed = 600.0;
     }
     if (!(this->HasAuthority()))
     {
@@ -309,14 +321,20 @@ void AADITLOIS_PlayerController::OnActionSprintPress(const FInputActionValue &Va
 
 void AADITLOIS_PlayerController::ServerOnActionSprintPress_Implementation(const FInputActionValue &Value)
 {
-    Cast<UCharacterMovementComponent>(Cast<AADITLOIS_PlayerCharacter>(this->GetPawn())->GetMovementComponent())->MaxWalkSpeed = 600.0;
+    TObjectPtr<AADITLOIS_PlayerCharacter> pCharacter = Cast<AADITLOIS_PlayerCharacter>(this->GetPawn());
+    if (!pCharacter)
+        return;
+    Cast<UCharacterMovementComponent>(pCharacter->GetMovementComponent())->MaxWalkSpeed = 600.0;
 }
 
 void AADITLOIS_PlayerController::OnActionSprintRelease(const FInputActionValue &Value)
 {
     if (true || (this->HasAuthority()))
     {
-        Cast<UCharacterMovementComponent>(Cast<AADITLOIS_PlayerCharacter>(this->GetPawn())->GetMovementComponent())->MaxWalkSpeed = 300.0;
+        TObjectPtr<AADITLOIS_PlayerCharacter> pCharacter = Cast<AADITLOIS_PlayerCharacter>(this->GetPawn());
+        if (!pCharacter)
+            return;
+        Cast<UCharacterMovementComponent>(pCharacter->GetMovementComponent())->MaxWalkSpeed = 300.0;
     }
     if (!(this->HasAuthority()))
     {
@@ -326,7 +344,10 @@ void AADITLOIS_PlayerController::OnActionSprintRelease(const FInputActionValue &
 
 void AADITLOIS_PlayerController::ServerOnActionSprintRelease_Implementation(const FInputActionValue &Value)
 {
-    Cast<UCharacterMovementComponent>(Cast<AADITLOIS_PlayerCharacter>(this->GetPawn())->GetMovementComponent())->MaxWalkSpeed = 300.0;
+    TObjectPtr<AADITLOIS_PlayerCharacter> pCharacter = Cast<AADITLOIS_PlayerCharacter>(this->GetPawn());
+    if (!pCharacter)
+        return;
+    Cast<UCharacterMovementComponent>(pCharacter->GetMovementComponent())->MaxWalkSpeed = 300.0;
 }
 
 void AADITLOIS_PlayerController::OnActionInteract(const FInputActionValue &Value)
@@ -335,7 +356,10 @@ void AADITLOIS_PlayerController::OnActionInteract(const FInputActionValue &Value
     {
         if (this->GetPawn())
         {
-            TObjectPtr<AActor> actorToInteractWith = Cast<AADITLOIS_PlayerCharacter>(this->GetPawn())->interactionTarget;
+            TObjectPtr<AADITLOIS_PlayerCharacter> pCharacter = Cast<AADITLOIS_PlayerCharacter>(this->GetPawn());
+            if (!pCharacter)
+                return;
+            TObjectPtr<AActor> actorToInteractWith = pCharacter->interactionTarget;
             if (actorToInteractWith && actorToInteractWith->GetIsReplicated())
             {
                 if (actorToInteractWith->GetClass()->ImplementsInterface(UADITLOIS_Interactable_Interface::StaticClass()))
@@ -356,7 +380,10 @@ void AADITLOIS_PlayerController::ServerOnActionInteract_Implementation(const FIn
 {
     if (this->GetPawn())
     {
-        TObjectPtr<AActor> actorToInteractWith = Cast<AADITLOIS_PlayerCharacter>(this->GetPawn())->interactionTarget;
+        TObjectPtr<AADITLOIS_PlayerCharacter> pCharacter = Cast<AADITLOIS_PlayerCharacter>(this->GetPawn());
+        if (!pCharacter)
+            return;
+        TObjectPtr<AActor> actorToInteractWith = pCharacter->interactionTarget;
         if (actorToInteractWith && actorToInteractWith->GetIsReplicated())
         {
             if (actorToInteractWith->GetClass()->ImplementsInterface(UADITLOIS_Interactable_Interface::StaticClass()))
@@ -377,6 +404,8 @@ void AADITLOIS_PlayerController::OnActionCameraZoom(const FInputActionValue &Val
             return;
         }
         TObjectPtr<AADITLOIS_PlayerCharacter> pCharacter = Cast<AADITLOIS_PlayerCharacter>(this->GetPawn());
+        if (!pCharacter)
+            return;
         float move = Value.Get<float>();
         TObjectPtr<USpringArmComponent> characterSpringArm = pCharacter->springArm;
         if (move > 0.0f)
@@ -415,6 +444,8 @@ void AADITLOIS_PlayerController::ServerOnActionCameraZoom_Implementation(const F
         return;
     }
     TObjectPtr<AADITLOIS_PlayerCharacter> pCharacter = Cast<AADITLOIS_PlayerCharacter>(this->GetPawn());
+    if (!pCharacter)
+        return;
     float move = Value.Get<float>();
     TObjectPtr<USpringArmComponent> characterSpringArm = pCharacter->springArm;
     if (move > 0.0f)
@@ -487,7 +518,7 @@ void AADITLOIS_PlayerController::ServerOnActionSwitchCharacter_Implementation()
 {
     UE_LOG(LogTemp, Warning, TEXT("Called Server Switch Character."));
 
-    FString LionessPath = "/Game/Blueprints/Character_Blueprints/BP_ADITLOIS_PlayerCharacter_Lioness.BP_ADITLOIS_PlayerCharacter_Lioness_C";
+    FString LionessPath = "/Game/Blueprints/Character_Blueprints/BPI_ADITLOIS_PlayerPawn_Lioness.BPI_ADITLOIS_PlayerPawn_Lioness_C";
     FString ErectusPath = "/Game/Blueprints/Character_Blueprints/BP_ADITLOIS_PlayerCharacter.BP_ADITLOIS_PlayerCharacter_C";
 
     APawn *ExistingPawn = this->GetPawn();
@@ -518,6 +549,8 @@ void AADITLOIS_PlayerController::ServerOnActionSwitchCharacter_Implementation()
         return;
 
     this->Possess(NewPawn); // Replicated automatically to all clients
+
+    UE_LOG(LogTemp, Warning, TEXT("Called Server Switch Character and successfully switched to spawned pawn."));
 }
 
 void AADITLOIS_PlayerController::OnActionPauseGame()
