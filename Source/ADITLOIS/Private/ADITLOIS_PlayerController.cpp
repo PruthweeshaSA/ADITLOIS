@@ -518,7 +518,9 @@ void AADITLOIS_PlayerController::ServerOnActionSwitchCharacter_Implementation()
 {
     UE_LOG(LogTemp, Warning, TEXT("Called Server Switch Character."));
 
-    FString LionessPath = "/Game/Blueprints/Character_Blueprints/BPI_ADITLOIS_PlayerPawn_Lioness.BPI_ADITLOIS_PlayerPawn_Lioness_C";
+    // FString LionessPath = "/Game/Blueprints/Character_Blueprints/BPI_ADITLOIS_PlayerPawn_Lioness.BPI_ADITLOIS_PlayerPawn_Lioness_C";
+    // FString LionessPath = "/Game/Blueprints/Character_Blueprints/BP_ADITLOIS_PlayerCharacter_Lioness.BP_ADITLOIS_PlayerCharacter_Lioness_C";
+    FString LionessPath = "/Game/Blueprints/Character_Blueprints/BP_ADITLOIS_QuadrupedPawn.BP_ADITLOIS_QuadrupedPawn_C";
     FString ErectusPath = "/Game/Blueprints/Character_Blueprints/BP_ADITLOIS_PlayerCharacter.BP_ADITLOIS_PlayerCharacter_C";
 
     APawn *ExistingPawn = this->GetPawn();
