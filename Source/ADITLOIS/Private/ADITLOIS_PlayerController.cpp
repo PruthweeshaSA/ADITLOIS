@@ -5,9 +5,12 @@
 #include "ADITLOIS_PlayerCharacter.h"
 #include "ADITLOIS_GameModeBase.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/Pawn.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "IADITLOIS_Interactable_Interface.h"
+#include "GameFramework/FloatingPawnMovement.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 AADITLOIS_PlayerController::AADITLOIS_PlayerController()
 {
@@ -310,7 +313,11 @@ void AADITLOIS_PlayerController::OnActionSprintPress(const FInputActionValue &Va
     {
         TObjectPtr<AADITLOIS_PlayerCharacter> pCharacter = Cast<AADITLOIS_PlayerCharacter>(this->GetPawn());
         if (!pCharacter)
+        {
+            TObjectPtr<APawn> pPawn = Cast<APawn>(this->GetPawn());
+            Cast<UFloatingPawnMovement>(pPawn->GetMovementComponent())->MaxSpeed = 1200.0;
             return;
+        }
         Cast<UCharacterMovementComponent>(pCharacter->GetMovementComponent())->MaxWalkSpeed = 600.0;
     }
     if (!(this->HasAuthority()))
@@ -323,7 +330,11 @@ void AADITLOIS_PlayerController::ServerOnActionSprintPress_Implementation(const 
 {
     TObjectPtr<AADITLOIS_PlayerCharacter> pCharacter = Cast<AADITLOIS_PlayerCharacter>(this->GetPawn());
     if (!pCharacter)
+    {
+        TObjectPtr<APawn> pPawn = Cast<APawn>(this->GetPawn());
+        Cast<UFloatingPawnMovement>(pPawn->GetMovementComponent())->MaxSpeed = 1200.0;
         return;
+    }
     Cast<UCharacterMovementComponent>(pCharacter->GetMovementComponent())->MaxWalkSpeed = 600.0;
 }
 
@@ -333,7 +344,11 @@ void AADITLOIS_PlayerController::OnActionSprintRelease(const FInputActionValue &
     {
         TObjectPtr<AADITLOIS_PlayerCharacter> pCharacter = Cast<AADITLOIS_PlayerCharacter>(this->GetPawn());
         if (!pCharacter)
+        {
+            TObjectPtr<APawn> pPawn = Cast<APawn>(this->GetPawn());
+            Cast<UFloatingPawnMovement>(pPawn->GetMovementComponent())->MaxSpeed = 300.0;
             return;
+        }
         Cast<UCharacterMovementComponent>(pCharacter->GetMovementComponent())->MaxWalkSpeed = 300.0;
     }
     if (!(this->HasAuthority()))
@@ -346,7 +361,11 @@ void AADITLOIS_PlayerController::ServerOnActionSprintRelease_Implementation(cons
 {
     TObjectPtr<AADITLOIS_PlayerCharacter> pCharacter = Cast<AADITLOIS_PlayerCharacter>(this->GetPawn());
     if (!pCharacter)
+    {
+        TObjectPtr<APawn> pPawn = Cast<APawn>(this->GetPawn());
+        Cast<UFloatingPawnMovement>(pPawn->GetMovementComponent())->MaxSpeed = 300.0;
         return;
+    }
     Cast<UCharacterMovementComponent>(pCharacter->GetMovementComponent())->MaxWalkSpeed = 300.0;
 }
 

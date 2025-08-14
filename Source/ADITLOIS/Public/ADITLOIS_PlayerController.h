@@ -23,6 +23,9 @@ class AADITLOIS_GameModeBase;
 class UUserWidget;
 class UGameplayStatics;
 class UADITLOIS_Interactable_Interface;
+class APawn;
+class ACharacter;
+class UFloatingPawnMovement;
 
 /**
  *
