@@ -42,12 +42,15 @@ AADITLOIS_PlayerPawn::AADITLOIS_PlayerPawn()
     this->GetMovementComponent()->SetIsReplicated(true);
     this->GetRootComponent()->SetIsReplicated(true);
 
-    // if (skeletalMeshFinder.Succeeded())
-    // {
-    //     this->GetMesh()->SetSkeletalMeshAsset(skeletalMeshFinder.Object);
-    //     this->GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, -85.0f));
-    //     this->GetMesh()->SetIsReplicated(true);
-    // }
+    SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Mesh"));
+    SkeletalMesh->SetupAttachment(RootComponent);
+
+    if (skeletalMeshFinder.Succeeded())
+    {
+        SkeletalMesh->SetSkeletalMeshAsset(skeletalMeshFinder.Object);
+        SkeletalMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -85.0f));
+        SkeletalMesh->SetIsReplicated(true);
+    }
     springArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComponent"));
     camera = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
 
@@ -134,9 +137,4 @@ void AADITLOIS_PlayerPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> 
     DOREPLIFETIME(AADITLOIS_PlayerPawn, interactionTarget);
     DOREPLIFETIME(AADITLOIS_PlayerPawn, springArm);
     DOREPLIFETIME(AADITLOIS_PlayerPawn, camera);
-}
-
-TObjectPtr<USkeletalMeshComponent> AADITLOIS_PlayerPawn::GetMesh()
-{
-    return Mesh;
 }

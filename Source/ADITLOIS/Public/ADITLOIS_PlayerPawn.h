@@ -48,7 +48,7 @@ public:
 
 	/** The main skeletal mesh associated with this Character (optional sub-object). */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<USkeletalMeshComponent> Mesh;
+	TObjectPtr<USkeletalMeshComponent> SkeletalMesh;
 
 	/** Movement component used for movement logic in various movement modes (walking, falling, etc), containing relevant settings and functions to control movement. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
@@ -57,9 +57,6 @@ public:
 	/** The BoxComponent being used for movement collision (by FloatingPawnMovement). */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UBoxComponent> BoxComponent;
-
-	/** Returns Mesh subobject **/
-	TObjectPtr<USkeletalMeshComponent> GetMesh();
 
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<USpringArmComponent> springArm = nullptr;
