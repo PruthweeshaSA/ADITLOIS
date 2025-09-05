@@ -1,5 +1,4 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-#pragma once
 
 #include "ADITLOIS_PlayerPawn.h"
 #include "UObject/ConstructorHelpers.h"
@@ -9,38 +8,39 @@
 #include "Components/BoxComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Engine/CollisionProfile.h"
 #include "Net/UnrealNetwork.h"
 
 // Sets default values
 AADITLOIS_PlayerPawn::AADITLOIS_PlayerPawn()
 {
-    // Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
     PrimaryActorTick.TickInterval = 0.0f;
-    this->bReplicates = true;
-    this->SetReplicateMovement(true);
 
-    this->hitResult = FHitResult();
+    bReplicates = true;
+    SetReplicateMovement(true);
 
-    this->bUseControllerRotationYaw = false;
+    hitResult = FHitResult();
+    bUseControllerRotationYaw = false;
 
-    static ConstructorHelpers::FObjectFinder<USkeletalMesh> skeletalMeshFinder(TEXT("SkeletalMesh'/Game/Assets/SkeletalMeshes/SKM_Sherni.SKM_Sherni'"));
+    static ConstructorHelpers::FObjectFinder<USkeletalMesh> skeletalMeshFinder(
+        TEXT("SkeletalMesh'/Game/Assets/SkeletalMeshes/SKM_Sherni.SKM_Sherni'"));
 
     BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
     BoxComponent->InitBoxExtent(FVector(70.0f, 24.0f, 54.0f));
     BoxComponent->SetCollisionProfileName(UCollisionProfile::Pawn_ProfileName);
-
     BoxComponent->CanCharacterStepUpOn = ECB_No;
     BoxComponent->SetShouldUpdatePhysicsVolume(true);
     BoxComponent->SetCanEverAffectNavigation(false);
     BoxComponent->bDynamicObstacle = true;
-    this->RootComponent = BoxComponent;
+    BoxComponent->SetNotifyRigidBodyCollision(true);
+    RootComponent = BoxComponent;
 
     FloatingPawnMovement = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("FloatingPawnMovement"));
     FloatingPawnMovement->UpdatedComponent = BoxComponent;
 
-    this->GetMovementComponent()->SetIsReplicated(true);
-    this->GetRootComponent()->SetIsReplicated(true);
+    GetMovementComponent()->SetIsReplicated(true);
+    GetRootComponent()->SetIsReplicated(true);
 
     SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Mesh"));
     SkeletalMesh->SetupAttachment(RootComponent);
@@ -51,6 +51,7 @@ AADITLOIS_PlayerPawn::AADITLOIS_PlayerPawn()
         SkeletalMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -85.0f));
         SkeletalMesh->SetIsReplicated(true);
     }
+
     springArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComponent"));
     camera = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
 
@@ -59,13 +60,25 @@ AADITLOIS_PlayerPawn::AADITLOIS_PlayerPawn()
     springArm->SocketOffset = FVector(0.0f, 50.0f, 50.0f);
     springArm->bUsePawnControlRotation = true;
 
-    Cast<UFloatingPawnMovement>(this->GetMovementComponent())->MaxSpeed = 300.0;
+    OverlapBoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("OverlapBoxComponent"));
+    OverlapBoxComponent->SetCollisionProfileName(UCollisionProfile::Pawn_ProfileName);
+    OverlapBoxComponent->SetGenerateOverlapEvents(true);
+    OverlapBoxComponent->InitBoxExtent(FVector(30.0f, 24.0f, 15.0f));
+    OverlapBoxComponent->SetupAttachment(RootComponent);
+    OverlapBoxComponent->SetRelativeLocation(FVector(100.0f, 0.0f, 39.0f));
+
+    Cast<UFloatingPawnMovement>(GetMovementComponent())->MaxSpeed = 300.0f;
 }
 
 // Called when the game starts or when spawned
 void AADITLOIS_PlayerPawn::BeginPlay()
 {
     Super::BeginPlay();
+
+    if (BoxComponent)
+    {
+        BoxComponent->OnComponentHit.AddDynamic(this, &AADITLOIS_PlayerPawn::BoxComponent_ComponentHit);
+    }
 }
 
 void AADITLOIS_PlayerPawn::PossessedBy(AController *NewController)
@@ -79,55 +92,95 @@ void AADITLOIS_PlayerPawn::PossessedBy(AController *NewController)
     }
 }
 
+void AADITLOIS_PlayerPawn::ConditionalClimbEnable()
+{
+    TArray<AActor *> ActorsOverlapping;
+
+    if (OverlapBoxComponent == nullptr)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("OverlapBoxComponent is null"));
+        return;
+    }
+    OverlapBoxComponent->GetOverlappingActors(ActorsOverlapping);
+
+    bCanClimb = (ActorsOverlapping.Num() <= 1);
+
+    UE_LOG(LogTemp, Warning, TEXT("Result of CanClimb: %s"), bCanClimb ? TEXT("true") : TEXT("false"));
+}
+
 // Called every frame
 void AADITLOIS_PlayerPawn::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
     TObjectPtr<APlayerController> playerController = Cast<APlayerController>(GetController());
-
     if (playerController)
     {
         playerController->GetPlayerViewPoint(startPoint, viewRotation);
     }
 
-    startPoint = startPoint + viewRotation.Vector() * (springArm->TargetArmLength);
-    endPoint = startPoint + viewRotation.Vector() * (500.0f);
+    float ArmLength = (springArm ? springArm->TargetArmLength : 0.0f);
+    startPoint = startPoint + viewRotation.Vector() * ArmLength;
+    endPoint = startPoint + viewRotation.Vector() * 500.0f;
 
     FCollisionQueryParams TraceParams(FName(TEXT("")), false, this);
-
-    bool bHit = GetWorld()->LineTraceSingleByChannel(this->hitResult, startPoint, endPoint, ECC_Visibility, TraceParams);
+    bool bHit = GetWorld()->LineTraceSingleByChannel(hitResult, startPoint, endPoint, ECC_Visibility, TraceParams);
 
     TObjectPtr<APlayerState> playerState = playerController ? playerController->PlayerState : nullptr;
+    AActor *LocalTarget = bHit ? hitResult.GetActor() : nullptr;
 
     if (HasAuthority())
     {
-        interactionTarget = bHit ? this->hitResult.GetActor() : nullptr;
+        interactionTarget = LocalTarget;
     }
     else
     {
-        FHitResult localHitResult = this->hitResult;
-        ServerSetInteractionTarget(bHit, localHitResult);
-        // interactionTarget = bHit ? this->hitResult.GetActor() : nullptr;
+        if (LocalTarget != LastSentInteractionTarget)
+        {
+            LastSentInteractionTarget = LocalTarget;
+            ServerSetInteractionTarget(bHit, hitResult.ImpactPoint, LocalTarget);
+        }
     }
 
     if (GEngine && playerState)
     {
         int32 playerId = playerState->GetPlayerId();
-        FString hitDebugMessage = interactionTarget ? interactionTarget->GetName() : FString::Printf(TEXT("NullPtr"));
-        GEngine->AddOnScreenDebugMessage(playerId, 1.0f, FColor(0, 192, 64), FString::Printf(TEXT("Interaction Target: %s"), *hitDebugMessage));
+        FString hitDebugMessage = interactionTarget ? interactionTarget->GetName() : TEXT("NullPtr");
+        GEngine->AddOnScreenDebugMessage(playerId, 1.0f, FColor(0, 192, 64),
+                                         FString::Printf(TEXT("Interaction Target: %s"), *hitDebugMessage));
     }
 }
 
-void AADITLOIS_PlayerPawn::ServerSetInteractionTarget_Implementation(bool bHit, FHitResult localHitResult)
+void AADITLOIS_PlayerPawn::ServerSetInteractionTarget_Implementation(bool bHit, FVector HitLocation, AActor *HitActor)
 {
-    this->interactionTarget = bHit ? localHitResult.GetActor() : nullptr;
+    interactionTarget = bHit ? HitActor : nullptr;
 }
 
-// Called to bind functionality to input
 void AADITLOIS_PlayerPawn::SetupPlayerInputComponent(UInputComponent *PlayerInputComponent)
 {
     Super::SetupPlayerInputComponent(PlayerInputComponent);
+}
+
+void AADITLOIS_PlayerPawn::BoxComponent_ComponentHit(UPrimitiveComponent *HitComp, AActor *OtherActor,
+                                                     UPrimitiveComponent *OtherComp, FVector NormalImpulse, const FHitResult &Hit)
+{
+    if (OtherActor)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Hit detected with actor: %s"), *OtherActor->GetName());
+        if (GEngine)
+        {
+            GEngine->AddOnScreenDebugMessage(0, 1.0f, FColor(0, 192, 64),
+                                             FString::Printf(TEXT("Hit detected with actor: %s"), *OtherActor->GetName()));
+        }
+
+        ConditionalClimbEnable();
+
+        if (bCanClimb)
+        {
+            FVector lift = FVector(0.0f, 0.0f, (Hit.Location.Z - (BoxComponent->GetComponentLocation().Z - BoxComponent->GetScaledBoxExtent().Z)));
+            BoxComponent->AddImpulse(lift * 100.0f);
+        }
+    }
 }
 
 void AADITLOIS_PlayerPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const
@@ -135,6 +188,4 @@ void AADITLOIS_PlayerPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> 
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
     DOREPLIFETIME(AADITLOIS_PlayerPawn, interactionTarget);
-    DOREPLIFETIME(AADITLOIS_PlayerPawn, springArm);
-    DOREPLIFETIME(AADITLOIS_PlayerPawn, camera);
 }
