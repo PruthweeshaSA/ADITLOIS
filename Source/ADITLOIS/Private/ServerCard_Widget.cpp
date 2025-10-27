@@ -3,14 +3,16 @@
 #include "ServerCard_Widget.h"
 #include "ADITLOIS_GameInstance.h"
 #include "Kismet/GameplayStatics.h"
+#include "JoinSessionCallbackProxy.h"
 
-void UServerCard_Widget::JoinGameSession(const FBlueprintSessionResult& SessionResult)
+void UServerCard_Widget::JoinGameSession(const FBlueprintSessionResult &SessionResult)
 {
-    if (UWorld* World = GetWorld())
+    if (UWorld *World = GetWorld())
     {
-        if (UADITLOIS_GameInstance* GI = World->GetGameInstance<UADITLOIS_GameInstance>())
+        if (UADITLOIS_GameInstance *GI = World->GetGameInstance<UADITLOIS_GameInstance>())
         {
-            GI->JoinGameSession(SessionResult);
+            // GI->JoinGameSession(SessionResult);
+            // UJoinSessionCallbackProxy::JoinSession(GetWorld(), GetOwningPlayer(), SessionResult);
         }
         else
         {

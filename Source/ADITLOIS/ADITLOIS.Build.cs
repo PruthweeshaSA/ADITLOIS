@@ -24,6 +24,7 @@ public class ADITLOIS : ModuleRules
 			"UMG",
 			"OnlineSubsystem",
 			"OnlineSubsystemUtils",
+			"OnlineBlueprintSupport",
 			"AdvancedSessions",
 			"OnlineBlueprintSupport"
 		});

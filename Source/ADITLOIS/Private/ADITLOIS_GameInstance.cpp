@@ -50,7 +50,7 @@ void UADITLOIS_GameInstance::HostGameSession(FName SessionName, int32 MaxPlayers
         false, // bUsesStats
         true,  // bShouldAdvertise
         false, // bUseLobbiesVoiceChatIfAvailable
-        false  // Set bStartAfterCreate = false
+        true   // Set bStartAfterCreate = false
     );
 
     if (!StoredProxy)
@@ -162,4 +162,3 @@ void UADITLOIS_GameInstance::OnJoinSessionComplete(FName SessionName, EOnJoinSes
         UE_LOG(LogTemp, Error, TEXT("Could not get resolved connect string."));
     }
 }
-
