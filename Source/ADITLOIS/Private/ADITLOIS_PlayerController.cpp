@@ -3,6 +3,7 @@
 #include "ADITLOIS_PlayerController.h"
 #include "UObject/ConstructorHelpers.h"
 #include "ADITLOIS_PlayerCharacter.h"
+#include "ADITLOIS_PlayerPawn.h"
 #include "ADITLOIS_GameModeBase.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/Pawn.h"
@@ -177,11 +178,20 @@ void AADITLOIS_PlayerController::OnPossess(APawn *aPawn)
     TObjectPtr<AADITLOIS_PlayerCharacter> pCharacter = Cast<AADITLOIS_PlayerCharacter>(aPawn);
     if (!pCharacter)
         return;
-    playerCharacter = pCharacter;
-    if (playerCharacter != nullptr)
+    playerPawn = pCharacter;
+    if (playerPawn != nullptr)
     {
-        Cast<UCharacterMovementComponent>(playerCharacter->GetMovementComponent())->MaxWalkSpeed = 300.0;
+        Cast<UCharacterMovementComponent>(playerPawn->GetMovementComponent())->MaxWalkSpeed = 300.0;
         ServerOnPossess(aPawn);
+    }
+    else
+    {
+        TObjectPtr<AADITLOIS_PlayerPawn> pPawn = Cast<AADITLOIS_PlayerPawn>(aPawn);
+        if (playerPawn != nullptr)
+        {
+            Cast<UFloatingPawnMovement>(playerPawn->GetMovementComponent())->MaxSpeed = 300.0;
+            ServerOnPossess(aPawn);
+        }
     }
     // checkf(playerCharacter,
     //        TEXT("AADITLOIS_PlayerCharacter Cast failed."));
@@ -195,6 +205,16 @@ void AADITLOIS_PlayerController::ServerOnPossess_Implementation(APawn *aPawn)
     if (pCharacter != nullptr)
     {
         Cast<UCharacterMovementComponent>(pCharacter->GetMovementComponent())->MaxWalkSpeed = 300.0;
+    }
+    else
+    {
+        TObjectPtr<AADITLOIS_PlayerPawn> pPawn = Cast<AADITLOIS_PlayerPawn>(aPawn);
+        if (!pPawn)
+            return;
+        if (pPawn != nullptr)
+        {
+            Cast<UFloatingPawnMovement>(pPawn->GetMovementComponent())->MaxSpeed = 300.0;
+        }
     }
     UE_LOG(LogTemp, Log, TEXT("Server is running OnPossess"));
 }
@@ -604,7 +624,7 @@ void AADITLOIS_PlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProp
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-    DOREPLIFETIME(AADITLOIS_PlayerController, playerCharacter);
+    DOREPLIFETIME(AADITLOIS_PlayerController, playerPawn);
     DOREPLIFETIME(AADITLOIS_PlayerController, playerScore);
     DOREPLIFETIME(AADITLOIS_PlayerController, playerControllerRotation);
 }

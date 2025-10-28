@@ -16,6 +16,7 @@
 
 class UEnhancedInputComponent;
 class AADITLOIS_PlayerCharacter;
+class AADITLOIS_PlayerPawn;
 class UInputMappingContext;
 class UInputAction;
 class UCharacterMovementComponent;
@@ -89,7 +90,7 @@ public:
 	void GetLifetimeReplicatedProps(class TArray<FLifetimeProperty> &OutLifetimeProps) const override;
 
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
-	TObjectPtr<AADITLOIS_PlayerCharacter> playerCharacter = nullptr;
+	TObjectPtr<APawn> playerPawn = nullptr;
 
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
 	int32 playerScore = 0;
@@ -139,7 +140,7 @@ private:
 	UFUNCTION(Server, Unreliable, Blueprintable)
 	void ServerOnActionLook(FRotator controllerRotation, FRotator characterRotation);
 
-	UFUNCTION(Server, Unreliable, Blueprintable)
+	UFUNCTION(Server, Reliable, Blueprintable)
 	void ServerOnActionMove(FVector characterLocation, FRotator characterRotation);
 
 	UFUNCTION(Server, Reliable, Blueprintable)

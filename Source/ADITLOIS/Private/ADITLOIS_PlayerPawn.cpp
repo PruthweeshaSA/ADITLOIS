@@ -68,6 +68,12 @@ AADITLOIS_PlayerPawn::AADITLOIS_PlayerPawn()
     OverlapBoxComponent->SetRelativeLocation(FVector(100.0f, 0.0f, 39.0f));
 
     Cast<UFloatingPawnMovement>(GetMovementComponent())->MaxSpeed = 300.0f;
+
+    this->bReplicates = true;
+	this->SetReplicateMovement(true);
+	this->FloatingPawnMovement->SetIsReplicated(true);
+	this->BoxComponent->SetIsReplicated(false);
+	this->SkeletalMesh->SetIsReplicated(true);
 }
 
 // Called when the game starts or when spawned
