@@ -15,10 +15,10 @@
 AADITLOIS_PlayerPawn::AADITLOIS_PlayerPawn()
 {
     PrimaryActorTick.bCanEverTick = true;
-    PrimaryActorTick.TickInterval = 0.0f;
-
-    bReplicates = true;
-    SetReplicateMovement(true);
+	PrimaryActorTick.TickInterval = 0.0f;
+    this->bReplicates = true;
+	this->SetReplicateMovement(false);
+	
 
     hitResult = FHitResult();
     bUseControllerRotationYaw = false;
@@ -26,18 +26,18 @@ AADITLOIS_PlayerPawn::AADITLOIS_PlayerPawn()
     static ConstructorHelpers::FObjectFinder<USkeletalMesh> skeletalMeshFinder(
         TEXT("SkeletalMesh'/Game/Assets/SkeletalMeshes/SKM_Sherni.SKM_Sherni'"));
 
-    BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
-    BoxComponent->InitBoxExtent(FVector(70.0f, 24.0f, 54.0f));
-    BoxComponent->SetCollisionProfileName(UCollisionProfile::Pawn_ProfileName);
-    BoxComponent->CanCharacterStepUpOn = ECB_No;
-    BoxComponent->SetShouldUpdatePhysicsVolume(true);
-    BoxComponent->SetCanEverAffectNavigation(false);
-    BoxComponent->bDynamicObstacle = true;
-    BoxComponent->SetNotifyRigidBodyCollision(true);
-    RootComponent = BoxComponent;
+    boxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
+    boxComponent->InitBoxExtent(FVector(70.0f, 24.0f, 54.0f));
+    boxComponent->SetCollisionProfileName(UCollisionProfile::Pawn_ProfileName);
+    boxComponent->CanCharacterStepUpOn = ECB_No;
+    boxComponent->SetShouldUpdatePhysicsVolume(true);
+    boxComponent->SetCanEverAffectNavigation(false);
+    boxComponent->bDynamicObstacle = true;
+    boxComponent->SetNotifyRigidBodyCollision(true);
+    RootComponent = boxComponent;
 
     FloatingPawnMovement = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("FloatingPawnMovement"));
-    FloatingPawnMovement->UpdatedComponent = BoxComponent;
+    FloatingPawnMovement->UpdatedComponent = boxComponent;
 
     GetMovementComponent()->SetIsReplicated(true);
     GetRootComponent()->SetIsReplicated(true);
@@ -49,8 +49,13 @@ AADITLOIS_PlayerPawn::AADITLOIS_PlayerPawn()
     {
         SkeletalMesh->SetSkeletalMeshAsset(skeletalMeshFinder.Object);
         SkeletalMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -85.0f));
-        SkeletalMesh->SetIsReplicated(true);
+        // SkeletalMesh->SetIsReplicated(true);
     }
+
+    this->FloatingPawnMovement->SetIsReplicated(true);
+	this->GetRootComponent()->SetIsReplicated(true);
+	this->SkeletalMesh->SetIsReplicated(true);
+	this->hitResult = FHitResult();
 
     springArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComponent"));
     camera = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
@@ -69,11 +74,7 @@ AADITLOIS_PlayerPawn::AADITLOIS_PlayerPawn()
 
     Cast<UFloatingPawnMovement>(GetMovementComponent())->MaxSpeed = 300.0f;
 
-    this->bReplicates = true;
-	this->SetReplicateMovement(true);
-	this->FloatingPawnMovement->SetIsReplicated(true);
-	this->BoxComponent->SetIsReplicated(false);
-	this->SkeletalMesh->SetIsReplicated(true);
+    this->OverlapBoxComponent->SetIsReplicated(true);
 }
 
 // Called when the game starts or when spawned
@@ -81,9 +82,9 @@ void AADITLOIS_PlayerPawn::BeginPlay()
 {
     Super::BeginPlay();
 
-    if (BoxComponent)
+    if (boxComponent)
     {
-        BoxComponent->OnComponentHit.AddDynamic(this, &AADITLOIS_PlayerPawn::BoxComponent_ComponentHit);
+        boxComponent->OnComponentHit.AddDynamic(this, &AADITLOIS_PlayerPawn::BoxComponent_ComponentHit);
     }
 }
 
@@ -93,7 +94,7 @@ void AADITLOIS_PlayerPawn::PossessedBy(AController *NewController)
 
     if (HasAuthority())
     {
-        SetReplicateMovement(true);
+        SetReplicateMovement(false);
         bReplicates = true;
     }
 }
@@ -148,6 +149,21 @@ void AADITLOIS_PlayerPawn::Tick(float DeltaTime)
         }
     }
 
+    if (HasAuthority())
+    {
+        fServerTransform = GetActorTransform();
+    }
+    else
+    {
+        if (fServerTransform.GetLocation() != GetActorLocation() ||
+            fServerTransform.GetRotation() != GetActorRotation().Quaternion())
+        {
+            fServerTransform = GetActorTransform();
+            ServerSetActorTransform(fServerTransform);
+        }
+    }
+
+
     if (GEngine && playerState)
     {
         int32 playerId = playerState->GetPlayerId();
@@ -160,6 +176,12 @@ void AADITLOIS_PlayerPawn::Tick(float DeltaTime)
 void AADITLOIS_PlayerPawn::ServerSetInteractionTarget_Implementation(bool bHit, FVector HitLocation, AActor *HitActor)
 {
     interactionTarget = bHit ? HitActor : nullptr;
+}
+
+void AADITLOIS_PlayerPawn::AADITLOIS_PlayerPawn::ServerSetActorTransform_Implementation(FTransform NewTransform)
+{
+    SetActorTransform(NewTransform);
+    fServerTransform = NewTransform;
 }
 
 void AADITLOIS_PlayerPawn::SetupPlayerInputComponent(UInputComponent *PlayerInputComponent)
@@ -183,15 +205,34 @@ void AADITLOIS_PlayerPawn::BoxComponent_ComponentHit(UPrimitiveComponent *HitCom
 
         if (bCanClimb)
         {
-            FVector lift = FVector(0.0f, 0.0f, (Hit.Location.Z - (BoxComponent->GetComponentLocation().Z - BoxComponent->GetScaledBoxExtent().Z)));
-            BoxComponent->AddImpulse(lift * 100.0f);
+            FVector lift = FVector(0.0f, 0.0f, (Hit.Location.Z - (boxComponent->GetComponentLocation().Z - boxComponent->GetScaledBoxExtent().Z)));
+            boxComponent->AddImpulse(lift * (HasAuthority()?100.0f:200.0f));
+            // FloatingPawnMovement->AddInputVector(lift*(HasAuthority()?100.0f:150.0f), true);
+            
+            if (HasAuthority())
+            {
+                fServerTransform = GetActorTransform();
+            }
+            else
+            {
+                if (fServerTransform.GetLocation() != GetActorLocation() ||
+                    fServerTransform.GetRotation() != GetActorRotation().Quaternion())
+                {
+                    fServerTransform = GetActorTransform();
+                    ServerSetActorTransform(fServerTransform);
+                }
+            }
         }
     }
 }
 
 void AADITLOIS_PlayerPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const
 {
-    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-    DOREPLIFETIME(AADITLOIS_PlayerPawn, interactionTarget);
+	DOREPLIFETIME(AADITLOIS_PlayerPawn, interactionTarget);
+	DOREPLIFETIME(AADITLOIS_PlayerPawn, springArm);
+	DOREPLIFETIME(AADITLOIS_PlayerPawn, camera);
+    DOREPLIFETIME(AADITLOIS_PlayerPawn, SkeletalMesh);
+    DOREPLIFETIME(AADITLOIS_PlayerPawn, fServerTransform);
 }

@@ -43,7 +43,7 @@ public:
 	void ConditionalClimbEnable();
 
 	/** Skeletal mesh for the pawn */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<USkeletalMeshComponent> SkeletalMesh;
 
 	/** Floating pawn movement */
@@ -52,15 +52,15 @@ public:
 
 	/** Box collision used as root */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UBoxComponent> BoxComponent;
+	TObjectPtr<UBoxComponent> boxComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UBoxComponent> OverlapBoxComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<USpringArmComponent> springArm;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UCameraComponent> camera;
 
 	UPROPERTY()
@@ -81,6 +81,9 @@ public:
 	UPROPERTY()
 	bool bCanClimb = false;
 
+	UPROPERTY(Replicated)
+	FTransform fServerTransform = FTransform::Identity;
+
 	// Tracks last interaction target we sent to the server
 	UPROPERTY()
 	TObjectPtr<AActor> LastSentInteractionTarget = nullptr;
@@ -91,4 +94,7 @@ public:
 
 	UFUNCTION(Server, Reliable)
 	void ServerSetInteractionTarget(bool bHit, FVector HitLocation, AActor *HitActor);
+
+	UFUNCTION(Server, Unreliable)
+	void ServerSetActorTransform(FTransform NewTransform);
 };
