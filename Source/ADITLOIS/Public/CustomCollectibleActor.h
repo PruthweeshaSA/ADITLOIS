@@ -5,11 +5,12 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Components/StaticMeshComponent.h"
+#include "IADITLOIS_Interactable_Interface.h"
 
 #include "CustomCollectibleActor.generated.h"
 
 UCLASS()
-class ADITLOIS_API ACustomCollectibleActor : public AActor
+class ADITLOIS_API ACustomCollectibleActor : public AActor, public IADITLOIS_Interactable_Interface
 {
 	GENERATED_BODY()
 
@@ -27,4 +28,6 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UStaticMeshComponent> boxMesh;
+
+	virtual void Interact_Implementation(AActor *Interactor) override;
 };

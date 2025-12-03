@@ -403,8 +403,29 @@ void AADITLOIS_PlayerController::OnActionInteract(const FInputActionValue &Value
             {
                 if (actorToInteractWith->GetClass()->ImplementsInterface(UADITLOIS_Interactable_Interface::StaticClass()))
                 {
-                    actorToInteractWith->Destroy();
-                    this->playerScore += 1;
+                    // actorToInteractWith->Destroy();
+                    // this->playerScore += 1;
+
+                    IADITLOIS_Interactable_Interface::Execute_Interact(actorToInteractWith, this->GetPawn());
+                }
+            }
+            else
+            {
+                if (actorToInteractWith == nullptr)
+                {
+                    UE_LOG(LogTemp, Warning, TEXT("No actor to interact with."));
+                    if (GEngine)
+                    {
+                        GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("No actor to interact with."));
+                    }
+                }
+                else if (!actorToInteractWith->GetIsReplicated())
+                {
+                    UE_LOG(LogTemp, Warning, TEXT("Actor to interact with is not replicated."));
+                    if (GEngine)
+                    {
+                        GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Actor to interact with is not replicated."));
+                    }
                 }
             }
         }
@@ -427,8 +448,10 @@ void AADITLOIS_PlayerController::ServerOnActionInteract_Implementation(const FIn
         {
             if (actorToInteractWith->GetClass()->ImplementsInterface(UADITLOIS_Interactable_Interface::StaticClass()))
             {
-                actorToInteractWith->Destroy();
-                this->playerScore += 1;
+                // actorToInteractWith->Destroy();
+                // this->playerScore += 1;
+
+                IADITLOIS_Interactable_Interface::Execute_Interact(actorToInteractWith, this->GetPawn());
             }
         }
     }
