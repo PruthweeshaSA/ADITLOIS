@@ -7,16 +7,16 @@
 #include "Components/StaticMeshComponent.h"
 #include "IADITLOIS_Interactable_Interface.h"
 
-#include "CustomCollectibleActor.generated.h"
+#include "ADITLOIS_CustomCollectibleActor.generated.h"
 
 UCLASS()
-class ADITLOIS_API ACustomCollectibleActor : public AActor, public IADITLOIS_Interactable_Interface
+class ADITLOIS_API AADITLOIS_CustomCollectibleActor : public AActor, public IADITLOIS_Interactable_Interface
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this actor's properties
-	ACustomCollectibleActor();
+	AADITLOIS_CustomCollectibleActor();
 
 protected:
 	// Called when the game starts or when spawned
