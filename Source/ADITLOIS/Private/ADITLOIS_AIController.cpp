@@ -16,6 +16,21 @@ void AADITLOIS_AIController::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("AI Controller BeginPlay called."));
+	}
+}
+
+void AADITLOIS_AIController::OnPossess(APawn *aPawn)
+{
+	Super::OnPossess(aPawn);
+
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("AI Controller OnPossess called."));
+	}
+
 	// Start the periodic scanning function
 	if (GetWorld())
 	{
@@ -27,6 +42,7 @@ void AADITLOIS_AIController::BeginPlay()
 			true          // Loop/repeat
 		);
 	}
+
 }
 
 void AADITLOIS_AIController::ScanForInteractables()
@@ -36,6 +52,10 @@ void AADITLOIS_AIController::ScanForInteractables()
 	{
 		// No pawn to control, stop scanning.
 		GetWorld()->GetTimerManager().ClearTimer(ScanTimerHandle);
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("AIcontroller: No pawn to control, stop scanning."));
+		}
 		return;
 	}
 
@@ -53,15 +73,23 @@ void AADITLOIS_AIController::ScanForInteractables()
 		{
 			// 2. Check distance
 			const float DistanceSq = FVector::DistSquared(CurrentLocation, CurrentActor->GetActorLocation());
+
+			GetWorld()->GetTimerManager().ClearTimer(ScanTimerHandle);
 			
 			// 3. Check if within the scan radius
 			if (DistanceSq <= (ScanRadius * ScanRadius))
 			{
+				if (GEngine)
+				{
+					GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("AIcontroller: Target found within scan radius"));
+				}
+			
 				// 4. Check if it's the closest one so far
 				if (DistanceSq < ClosestDistanceSq)
 				{
 					ClosestDistanceSq = DistanceSq;
 					ClosestTarget = CurrentActor;
+					
 				}
 			}
 		}
@@ -81,6 +109,10 @@ void AADITLOIS_AIController::ScanForInteractables()
 					true);  // bCanStrafe (optional)
 
 		UE_LOG(LogTemp, Log, TEXT("AIController: Found and moving towards Interactable: %s"), *ClosestTarget->GetName());
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("AIController: Found and moving towards Interactable"));
+		}
 	}
 	else
 	{

@@ -6,6 +6,7 @@
 #include "AIController.h"
 #include "Kismet/GameplayStatics.h"
 #include "UObject/ConstructorHelpers.h"
+#include "ADITLOIS_AIController.h"
 
 AADITLOIS_GameModeBase::AADITLOIS_GameModeBase()
 {
@@ -69,7 +70,7 @@ void AADITLOIS_GameModeBase::SpawnBots()
     {
         FVector spawnLocation = FVector(0.0f);
         FRotator spawnRotator = FRotator::ZeroRotator;
-        TObjectPtr<AAIController> botAdded = Cast<AAIController>(GetWorld()->SpawnActor<AAIController>(AAIController::StaticClass(), spawnLocation, spawnRotator));
+        TObjectPtr<AAIController> botAdded = Cast<AAIController>(GetWorld()->SpawnActor<AADITLOIS_AIController>(AADITLOIS_AIController::StaticClass(), spawnLocation, spawnRotator));
         bots.Add(botAdded);
         spawnLocation = FindPlayerStart(botAdded)->GetActorLocation();
         spawnRotator = FindPlayerStart(botAdded)->GetActorRotation();

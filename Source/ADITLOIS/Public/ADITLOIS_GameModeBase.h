@@ -8,6 +8,7 @@
 #include "ADITLOIS_PlayerCharacter.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/PlayerController.h"
+#include "ADITLOIS_AIController.h"
 #include "GameFramework/HUD.h"
 #include "ADITLOIS_GameModeBase.generated.h"
 
@@ -19,6 +20,7 @@ class AAIController;
 class AADITLOIS_PlayerCharacter;
 class AADITLOIS_PlayerController;
 class UGameplayStatics;
+class AADITLOIS_AIcontroller;
 
 UCLASS()
 class ADITLOIS_API AADITLOIS_GameModeBase : public AGameModeBase

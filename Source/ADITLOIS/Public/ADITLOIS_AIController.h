@@ -34,11 +34,14 @@ private:
 
 	/** The radius used for the sphere trace/overlap check. */
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
-	float ScanRadius = 2000.0f; // 20-meter radius
+	float ScanRadius = 10000.0f; // 100-meter radius
 
 	/**
 	 * Scans the surrounding area for objects implementing the interactable interface.
 	 * Moves the controlled pawn towards the closest one.
 	 */
 	void ScanForInteractables();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void OnPossess(APawn *aPawn) override;
 };
