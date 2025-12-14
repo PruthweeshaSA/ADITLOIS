@@ -2,11 +2,15 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
+#include "Navigation/PathFollowingComponent.h"
 #include "ADITLOIS_AIController.generated.h"
 
 // Forward Declaration for your custom interface
 // You must ensure this interface file exists and is included in your build.
 class IADITLOIS_Interactable_Interface;
+
+class UPathFollowingComponent;
+
 
 /**
  * Barebones AIController that periodically scans for interactable objects and moves towards the closest one.
@@ -44,4 +48,6 @@ private:
 
 	UFUNCTION(BlueprintCallable)
 	virtual void OnPossess(APawn *aPawn) override;
+
+	virtual void OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult &Result) override;
 };

@@ -3,6 +3,7 @@
 #include "GameFramework/Pawn.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "IADITLOIS_Interactable_Interface.h" // Include your interface header
+#include "NavigationSystem.h"
 // Note: Replace "ADITLOIS_Interactable_Interface.h" with your actual path/filename
 
 AADITLOIS_AIController::AADITLOIS_AIController()
@@ -45,6 +46,9 @@ void AADITLOIS_AIController::OnPossess(APawn *aPawn)
 
 }
 
+float ACCEPTANCE_RADIUS = 300.0f;
+
+
 void AADITLOIS_AIController::ScanForInteractables()
 {
 	APawn* ControlledPawn = GetPawn();
@@ -74,8 +78,6 @@ void AADITLOIS_AIController::ScanForInteractables()
 			// 2. Check distance
 			const float DistanceSq = FVector::DistSquared(CurrentLocation, CurrentActor->GetActorLocation());
 
-			GetWorld()->GetTimerManager().ClearTimer(ScanTimerHandle);
-			
 			// 3. Check if within the scan radius
 			if (DistanceSq <= (ScanRadius * ScanRadius))
 			{
@@ -98,13 +100,13 @@ void AADITLOIS_AIController::ScanForInteractables()
 	// If a target was found, move the pawn towards it
 	if (ClosestTarget)
 	{
-		// Stop any current movement before starting a new one
-		StopMovement(); 
+		// Stop scanning while we pursue the target
+		GetWorld()->GetTimerManager().ClearTimer(ScanTimerHandle);
 		
 		// Move the controlled pawn to the target actor's location
 		// The MoveToActor function handles pathfinding.
 		MoveToActor(ClosestTarget, 
-					150.0f, // Acceptance Radius (how close the AI needs to get)
+					ACCEPTANCE_RADIUS, // Acceptance Radius (how close the AI needs to get)
 					true,   // bStopOnOverlap (optional)
 					true);  // bCanStrafe (optional)
 
@@ -116,8 +118,39 @@ void AADITLOIS_AIController::ScanForInteractables()
 	}
 	else
 	{
-		// Optionally, stop movement if no target is found
-		// StopMovement(); 
-		// UE_LOG(LogTemp, Log, TEXT("AIController: No interactable targets found in range."));
+		// Move to random location to explore
+		FNavLocation RandomLocation;
+		UNavigationSystemV1* NavSystem = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
+		if (NavSystem && NavSystem->GetRandomPointInNavigableRadius(CurrentLocation, ScanRadius, RandomLocation))
+		{
+			MoveToLocation(RandomLocation.Location);
+			if (GEngine)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("AIController: Moving to random location."));
+			}
+		}
+
+		UE_LOG(LogTemp, Log, TEXT("AIController: No interactable targets found in range."));
+	}
+}
+
+// If move completed, restart scanning
+void AADITLOIS_AIController::OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result)
+{
+	// Movement has completed, restart scanning for interactables
+	if (GetWorld())
+	{
+		GetWorld()->GetTimerManager().SetTimer(
+			ScanTimerHandle,
+			this,
+			&AADITLOIS_AIController::ScanForInteractables,
+			ScanInterval, // Time between calls
+			true          // Loop/repeat
+		);
+	}
+
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("AIController: Movement completed, restarting scan."));
 	}
 }

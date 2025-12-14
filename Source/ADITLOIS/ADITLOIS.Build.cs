@@ -26,7 +26,8 @@ public class ADITLOIS : ModuleRules
 			"OnlineSubsystemUtils",
 			"OnlineBlueprintSupport",
 			"AdvancedSessions",
-			"OnlineBlueprintSupport"
+			"OnlineBlueprintSupport",
+			"NavigationSystem"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {
