@@ -10,6 +10,8 @@
 class IADITLOIS_Interactable_Interface;
 
 class UPathFollowingComponent;
+class UNavigationSystemV1;
+
 
 
 /**

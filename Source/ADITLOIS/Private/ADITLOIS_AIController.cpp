@@ -4,6 +4,8 @@
 #include "Navigation/PathFollowingComponent.h"
 #include "IADITLOIS_Interactable_Interface.h" // Include your interface header
 #include "NavigationSystem.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 // Note: Replace "ADITLOIS_Interactable_Interface.h" with your actual path/filename
 
 AADITLOIS_AIController::AADITLOIS_AIController()
@@ -11,6 +13,7 @@ AADITLOIS_AIController::AADITLOIS_AIController()
 	// Set this controller to call Tick() every frame. 
 	// Not strictly needed for a timer-based check, but good for debugging.
 	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 }
 
 void AADITLOIS_AIController::BeginPlay()
@@ -32,6 +35,14 @@ void AADITLOIS_AIController::OnPossess(APawn *aPawn)
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("AI Controller OnPossess called."));
 	}
 
+	if (ACharacter* PossessedCharacter = Cast<ACharacter>(aPawn))
+	{
+		if (UCharacterMovementComponent* MoveComp = PossessedCharacter->GetCharacterMovement())
+		{
+			MoveComp->bOrientRotationToMovement = true;
+		}
+	}
+
 	// Start the periodic scanning function
 	if (GetWorld())
 	{
@@ -46,7 +57,7 @@ void AADITLOIS_AIController::OnPossess(APawn *aPawn)
 
 }
 
-float ACCEPTANCE_RADIUS = 300.0f;
+float ACCEPTANCE_RADIUS = 400.0f;
 
 
 void AADITLOIS_AIController::ScanForInteractables()
@@ -100,16 +111,28 @@ void AADITLOIS_AIController::ScanForInteractables()
 	// If a target was found, move the pawn towards it
 	if (ClosestTarget)
 	{
+		if (ClosestDistanceSq <= (ACCEPTANCE_RADIUS * ACCEPTANCE_RADIUS) && ClosestTarget->Implements<UADITLOIS_Interactable_Interface>())
+		{
+			IADITLOIS_Interactable_Interface::Execute_Interact(ClosestTarget, ControlledPawn);
+			return;
+		}
+
 		// Stop scanning while we pursue the target
-		GetWorld()->GetTimerManager().ClearTimer(ScanTimerHandle);
+		// ClearTimer disabled since bots are getting stuck
+		// GetWorld()->GetTimerManager().ClearTimer(ScanTimerHandle);
 		
 		// Move the controlled pawn to the target actor's location
 		// The MoveToActor function handles pathfinding.
-		MoveToActor(ClosestTarget, 
-					ACCEPTANCE_RADIUS, // Acceptance Radius (how close the AI needs to get)
+		FAIRequestID MoveReqID = MoveToActor(ClosestTarget, 
+					ACCEPTANCE_RADIUS * 0.75, // Acceptance Radius (how close the AI needs to get)
 					true,   // bStopOnOverlap (optional)
-					true);  // bCanStrafe (optional)
+					true,   // bUsePathfinding (optional)
+					true,  // bCanStrafe (optional)
+					nullptr, // No Filter Class
+					true   // bAllowPartialPath (optional)
+		);
 
+		
 		UE_LOG(LogTemp, Log, TEXT("AIController: Found and moving towards Interactable: %s"), *ClosestTarget->GetName());
 		if (GEngine)
 		{
@@ -118,19 +141,33 @@ void AADITLOIS_AIController::ScanForInteractables()
 	}
 	else
 	{
-		// Move to random location to explore
-		FNavLocation RandomLocation;
-		UNavigationSystemV1* NavSystem = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
-		if (NavSystem && NavSystem->GetRandomPointInNavigableRadius(CurrentLocation, ScanRadius, RandomLocation))
+		// Only move to random location if not already moving
+		if (GetMoveStatus() == EPathFollowingStatus::Idle)
 		{
-			MoveToLocation(RandomLocation.Location);
-			if (GEngine)
+			// Move to random location to explore
+			FNavLocation RandomLocation;
+			UNavigationSystemV1* NavSystem = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
+			if (NavSystem && NavSystem->GetRandomPointInNavigableRadius(CurrentLocation, ScanRadius, RandomLocation))
 			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("AIController: Moving to random location."));
+				MoveToLocation(RandomLocation.Location);
+				if (GEngine)
+				{
+					GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("AIController: Moving to random location."));
+				}
 			}
 		}
 
 		UE_LOG(LogTemp, Log, TEXT("AIController: No interactable targets found in range."));
+		if (GetWorld())
+		{
+			GetWorld()->GetTimerManager().SetTimer(
+				ScanTimerHandle,
+				this,
+				&AADITLOIS_AIController::ScanForInteractables,
+				ScanInterval, // Time between calls
+				true          // Loop/repeat
+			);
+		}
 	}
 }
 

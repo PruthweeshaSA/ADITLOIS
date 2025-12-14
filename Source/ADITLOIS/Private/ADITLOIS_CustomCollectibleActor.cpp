@@ -4,6 +4,10 @@
 #include "IADITLOIS_Interactable_Interface.h"
 #include "Engine/Engine.h"
 #include "GameFramework/Actor.h"
+#include "ADITLOIS_GameState.h"
+#include "ADITLOIS_PlayerController.h"
+#include "ADITLOIS_GameModeBase.h"
+#include "NavigationSystem.h"
 
 // Sets default values
 AADITLOIS_CustomCollectibleActor::AADITLOIS_CustomCollectibleActor()
@@ -35,4 +39,33 @@ void AADITLOIS_CustomCollectibleActor::Interact_Implementation(AActor *Interacto
 	{
 		GEngine->AddOnScreenDebugMessage(0, 5.0f, FColor::Yellow, FString::Printf(TEXT("You have interacted with %s"), *GetName()));
 	}
+	// increment score through GameState
+	APawn* InteractorPawn = Cast<APawn>(Interactor);
+	if (AADITLOIS_GameModeBase* GM = Cast<AADITLOIS_GameModeBase>(GetWorld()->GetAuthGameMode()))
+	{
+		if (InteractorPawn && InteractorPawn->GetController() && InteractorPawn->GetController()->IsA(AADITLOIS_PlayerController::StaticClass()))
+		{
+			GM->AddScore(1);
+		}
+		else
+		{
+			GM->AddScore(-1);
+		}
+
+		if (UWorld* World = GetWorld())
+		{
+			if (UNavigationSystemV1* NavSystem = FNavigationSystem::GetCurrent<UNavigationSystemV1>(World))
+			{
+				FNavLocation RandomLocation;
+				if (NavSystem->GetRandomPointInNavigableRadius(GetActorLocation(), 2000.0f, RandomLocation))
+				{
+					FActorSpawnParameters SpawnParams;
+					SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+					World->SpawnActor<AADITLOIS_CustomCollectibleActor>(GetClass(), RandomLocation.Location, FRotator::ZeroRotator, SpawnParams);
+				}
+			}
+		}
+		Destroy();
+	}
+	
 }

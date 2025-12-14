@@ -7,6 +7,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "UObject/ConstructorHelpers.h"
 #include "ADITLOIS_AIController.h"
+#include "ADITLOIS_GameState.h"
 
 AADITLOIS_GameModeBase::AADITLOIS_GameModeBase()
 {
@@ -47,6 +48,8 @@ AADITLOIS_GameModeBase::AADITLOIS_GameModeBase()
     {
         UE_LOG(LogTemp, Error, TEXT("hudClass BluePrint not found."));
     }
+
+    GameStateClass = AADITLOIS_GameState::StaticClass();
 }
 
 void AADITLOIS_GameModeBase::BeginPlay()
@@ -117,4 +120,16 @@ void AADITLOIS_GameModeBase::LoadGame(AADITLOIS_PlayerController *pController)
             }
         }
     }
+}
+
+void AADITLOIS_GameModeBase::AddScore(int32 ScoreToAdd)
+{
+	if (AADITLOIS_GameState* GS = GetGameState<AADITLOIS_GameState>())
+	{
+		GS->GlobalScore += ScoreToAdd;
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(0, 5.0f, FColor::Yellow, FString::Printf(TEXT("The score is now %d"), GS->GlobalScore));
+		}
+	}
 }

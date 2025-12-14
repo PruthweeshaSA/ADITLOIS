@@ -21,6 +21,9 @@ class AADITLOIS_PlayerCharacter;
 class AADITLOIS_PlayerController;
 class UGameplayStatics;
 class AADITLOIS_AIcontroller;
+class UADITLOIS_SaveGame;
+class UADITLOIS_GameState;
+
 
 UCLASS()
 class ADITLOIS_API AADITLOIS_GameModeBase : public AGameModeBase
@@ -38,6 +41,8 @@ public:
 
 	UFUNCTION(Blueprintable)
 	virtual void SpawnBots();
+
+	void AddScore(int32 ScoreToAdd);
 
 	UPROPERTY()
 	TSubclassOf<ACharacter> characterClass = nullptr;
