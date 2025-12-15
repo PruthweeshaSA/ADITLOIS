@@ -11,8 +11,7 @@ void UServerCard_Widget::JoinGameSession(const FBlueprintSessionResult &SessionR
     {
         if (UADITLOIS_GameInstance *GI = World->GetGameInstance<UADITLOIS_GameInstance>())
         {
-            // GI->JoinGameSession(SessionResult);
-            // UJoinSessionCallbackProxy::JoinSession(GetWorld(), GetOwningPlayer(), SessionResult);
+            GI->JoinGameSession(SessionResult);
         }
         else
         {

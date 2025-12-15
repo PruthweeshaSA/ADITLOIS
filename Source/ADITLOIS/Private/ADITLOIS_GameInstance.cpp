@@ -6,10 +6,28 @@
 #include "CreateSessionCallbackProxyAdvanced.h"
 #include "Kismet/GameplayStatics.h"
 #include "OnlineSubsystemUtils.h"
+#include "FindSessionsCallbackProxy.h"
+#include "Engine/LocalPlayer.h"
 
 void UADITLOIS_GameInstance::Init()
 {
     Super::Init();
+}
+
+void UADITLOIS_GameInstance::Shutdown()
+{
+    IOnlineSubsystem *Subsystem = IOnlineSubsystem::Get();
+    if (Subsystem)
+    {
+        IOnlineSessionPtr SessionInterface = Subsystem->GetSessionInterface();
+        if (SessionInterface.IsValid())
+        {
+            // Destroy the session so we can rejoin in the next PIE run
+            SessionInterface->DestroySession(NAME_GameSession);
+        }
+    }
+
+    Super::Shutdown();
 }
 
 void UADITLOIS_GameInstance::HostGameSession(FName SessionName, int32 MaxPlayers)
@@ -115,27 +133,86 @@ void UADITLOIS_GameInstance::OnSessionCreatedFailure()
     }
 }
 
+// The implementation of the function called from your widget
+// ADITLOIS_GameInstance.cpp (Final, Corrected Implementation)
+
 void UADITLOIS_GameInstance::JoinGameSession(const FBlueprintSessionResult &SessionResult)
 {
     IOnlineSubsystem *Subsystem = IOnlineSubsystem::Get();
     if (!Subsystem)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Online Subsystem is not available. Cannot join session."));
         return;
+    }
 
     IOnlineSessionPtr SessionInterface = Subsystem->GetSessionInterface();
     if (!SessionInterface.IsValid())
+    {
+        UE_LOG(LogTemp, Error, TEXT("Session Interface is invalid. Cannot join session."));
         return;
+    }
 
-    APlayerController *PC = GetWorld()->GetFirstPlayerController();
-    if (!PC)
+    // 1. Get the ULocalPlayer object associated with the GameInstance's world.
+    ULocalPlayer *LocalPlayer = GetFirstGamePlayer();
+    if (!LocalPlayer)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Could not get a valid Local Player. Cannot join session."));
+        OnJoinSessionCompleted(NAME_None, EOnJoinSessionCompleteResult::UnknownError);
         return;
+    }
 
+    // 2. Bind the delegate to our callback function
     JoinSessionCompleteHandle = SessionInterface->AddOnJoinSessionCompleteDelegate_Handle(
-        FOnJoinSessionCompleteDelegate::CreateUObject(this, &UADITLOIS_GameInstance::OnJoinSessionComplete));
+        FOnJoinSessionCompleteDelegate::CreateUObject(this, &UADITLOIS_GameInstance::OnJoinSessionCompleted));
 
-    SessionInterface->JoinSession(*PC->GetLocalPlayer()->GetPreferredUniqueNetId(), NAME_GameSession, SessionResult.OnlineResult);
+    // 3. CORRECTED: Access the native result using the confirmed member name 'OnlineResult'
+    const FOnlineSessionSearchResult *SearchResult = &SessionResult.OnlineResult;
+
+    if (!SearchResult || !SearchResult->IsValid()) // Added check for validity
+    {
+        UE_LOG(LogTemp, Error, TEXT("Invalid session search result provided via OnlineResult member."));
+        OnJoinSessionCompleted(NAME_None, EOnJoinSessionCompleteResult::UnknownError);
+        return;
+    }
+
+    // 4. Start the latent operation
+    bool bSuccess = SessionInterface->JoinSession(0, NAME_GameSession, *SearchResult);
+
+    if (!bSuccess)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Failed to start the native JoinSession call immediately."));
+        OnJoinSessionCompleted(NAME_None, EOnJoinSessionCompleteResult::UnknownError);
+    }
 }
 
-void UADITLOIS_GameInstance::OnJoinSessionComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result)
+// The callback executed when the latent operation finishes
+void UADITLOIS_GameInstance::OnJoinSessionCompleted(FName SessionName, EOnJoinSessionCompleteResult::Type Result)
+{
+    IOnlineSubsystem *Subsystem = IOnlineSubsystem::Get();
+    if (Subsystem)
+    {
+        IOnlineSessionPtr SessionInterface = Subsystem->GetSessionInterface();
+        if (SessionInterface.IsValid())
+        {
+            // Clear the delegate binding immediately after it fires
+            SessionInterface->ClearOnJoinSessionCompleteDelegate_Handle(JoinSessionCompleteHandle);
+        }
+    }
+
+    if (Result == EOnJoinSessionCompleteResult::Success)
+    {
+        UE_LOG(LogTemp, Log, TEXT("Successfully joined session: %s"), *SessionName.ToString());
+        TravelToSession(SessionName);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("Failed to join session. Result: %d"), (int32)Result);
+        // Handle failure, e.g., show a UI message
+    }
+}
+
+// Helper function to connect to the session's address
+void UADITLOIS_GameInstance::TravelToSession(FName SessionName)
 {
     IOnlineSubsystem *Subsystem = IOnlineSubsystem::Get();
     if (!Subsystem)
@@ -145,20 +222,22 @@ void UADITLOIS_GameInstance::OnJoinSessionComplete(FName SessionName, EOnJoinSes
     if (!SessionInterface.IsValid())
         return;
 
-    // Clean up the delegate
-    SessionInterface->ClearOnJoinSessionCompleteDelegate_Handle(JoinSessionCompleteHandle);
+    FString ConnectInfo;
 
-    FString ConnectString;
-    if (SessionInterface->GetResolvedConnectString(SessionName, ConnectString))
+    // 1. Get the connection string/URL
+    if (SessionInterface->GetResolvedConnectString(SessionName, ConnectInfo))
     {
-        APlayerController *PC = GetWorld()->GetFirstPlayerController();
-        if (PC)
+        UE_LOG(LogTemp, Log, TEXT("Traveling to URL: %s"), *ConnectInfo);
+
+        // 2. Perform the Client Travel
+        if (APlayerController *PlayerController = GetWorld()->GetFirstPlayerController())
         {
-            PC->ClientTravel(ConnectString, TRAVEL_Absolute);
+            // ClientTravel uses the URL we just retrieved
+            PlayerController->ClientTravel(ConnectInfo, ETravelType::TRAVEL_Absolute);
         }
     }
     else
     {
-        UE_LOG(LogTemp, Error, TEXT("Could not get resolved connect string."));
+        UE_LOG(LogTemp, Error, TEXT("Failed to get connection info for session: %s"), *SessionName.ToString());
     }
 }
