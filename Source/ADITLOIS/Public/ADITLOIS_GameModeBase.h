@@ -52,4 +52,7 @@ public:
 
 	UPROPERTY()
 	TSubclassOf<AHUD> hudBlueprintClass = nullptr;
+
+private:
+	int32 getTotalAIControllers();
 };

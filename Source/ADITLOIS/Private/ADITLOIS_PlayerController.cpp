@@ -216,6 +216,10 @@ void AADITLOIS_PlayerController::ServerOnPossess_Implementation(APawn *aPawn)
             Cast<UFloatingPawnMovement>(pPawn->GetMovementComponent())->MaxSpeed = 300.0;
         }
     }
+
+    Cast<AADITLOIS_GameModeBase>(GetWorld()->GetAuthGameMode())->SpawnBots();
+    UGameplayStatics::SetGamePaused(GetWorld(), false);
+
     UE_LOG(LogTemp, Log, TEXT("Server is running OnPossess"));
 }
 

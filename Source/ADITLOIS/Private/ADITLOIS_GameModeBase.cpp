@@ -55,21 +55,24 @@ AADITLOIS_GameModeBase::AADITLOIS_GameModeBase()
 void AADITLOIS_GameModeBase::BeginPlay()
 {
     Super::BeginPlay();
+}
 
-    FTimerHandle TimerHandle;
-    float DelayTime = 5.0f; // Delay time in seconds
-
-    GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AADITLOIS_GameModeBase::SpawnBots, DelayTime, false);
+int32 AADITLOIS_GameModeBase::getTotalAIControllers()
+{
+    TArray<AActor*> AIControllers;
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), AAIController::StaticClass(), AIControllers);
+    // The total count is:
+    return AIControllers.Num();
 }
 
 void AADITLOIS_GameModeBase::SpawnBots()
 {
-    // Code to execute after the delay
+    // Code to execute to spawn bots
     int32 numHumanPlayers = GetNumPlayers();
 
     TArray<AAIController *> bots;
 
-    while (bots.Num() < numHumanPlayers)
+    while (getTotalAIControllers() < numHumanPlayers)
     {
         FVector spawnLocation = FVector(0.0f);
         FRotator spawnRotator = FRotator::ZeroRotator;
