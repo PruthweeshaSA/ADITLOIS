@@ -12,3 +12,18 @@ void AADITLOIS_GameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 
 	DOREPLIFETIME(AADITLOIS_GameState, GlobalScore);
 }
+
+void AADITLOIS_GameState::AddToGlobalScore(int32 Points)
+{
+	GlobalScore += Points;
+}
+
+void AADITLOIS_GameState::ResetGlobalScore()
+{
+	GlobalScore = 0;
+}
+
+int32 AADITLOIS_GameState::GetGlobalScore() const
+{
+	return GlobalScore;
+}

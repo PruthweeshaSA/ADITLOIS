@@ -129,10 +129,10 @@ void AADITLOIS_GameModeBase::AddScore(int32 ScoreToAdd)
 {
 	if (AADITLOIS_GameState* GS = GetGameState<AADITLOIS_GameState>())
 	{
-		GS->GlobalScore += ScoreToAdd;
+		GS->AddToGlobalScore(ScoreToAdd);
 		if (GEngine)
 		{
-			GEngine->AddOnScreenDebugMessage(0, 5.0f, FColor::Yellow, FString::Printf(TEXT("The score is now %d"), GS->GlobalScore));
+			GEngine->AddOnScreenDebugMessage(0, 5.0f, FColor::Yellow, FString::Printf(TEXT("The score is now %d"), GS->GetGlobalScore()));
 		}
 	}
 }
