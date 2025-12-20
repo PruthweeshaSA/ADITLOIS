@@ -15,7 +15,7 @@ class ADITLOIS_API AADITLOIS_GameState : public AGameStateBase
 public:
 	AADITLOIS_GameState();
 
-private:
+public:
 	UPROPERTY(Replicated, BlueprintReadWrite, Category = "Score")
 	int32 GlobalScore;
 
