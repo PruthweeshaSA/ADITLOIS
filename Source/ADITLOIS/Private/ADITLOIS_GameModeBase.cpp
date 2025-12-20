@@ -115,11 +115,11 @@ void AADITLOIS_GameModeBase::LoadGame(AADITLOIS_PlayerController *pController)
             // pController->SetControlRotation(savedGameInstance->controlRotation);
             pController->playerControllerRotation = savedGameInstance->controlRotation;
             TObjectPtr<APlayerState> playerState = pController ? pController->PlayerState : nullptr;
-            if (GEngine && playerState)
+            if (playerState)
             {
                 int32 playerId = playerState->GetPlayerId();
                 FString hitDebugMessage = FString::Printf(TEXT("Camera Position loaded from savefile"));
-                GEngine->AddOnScreenDebugMessage(playerId, 1.0f, FColor(0, 192, 64), FString::Printf(TEXT("%s"), *hitDebugMessage));
+                UE_LOG(LogTemp, Log, TEXT("%s"), *hitDebugMessage);
             }
         }
     }
@@ -130,9 +130,6 @@ void AADITLOIS_GameModeBase::AddScore(int32 ScoreToAdd)
 	if (AADITLOIS_GameState* GS = GetGameState<AADITLOIS_GameState>())
 	{
 		GS->AddToGlobalScore(ScoreToAdd);
-		if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(0, 5.0f, FColor::Yellow, FString::Printf(TEXT("The score is now %d"), GS->GetGlobalScore()));
-		}
+        UE_LOG(LogTemp, Log, TEXT("The score is now %d"), GS->GetGlobalScore());
 	}
 }

@@ -164,12 +164,11 @@ void AADITLOIS_PlayerPawn::Tick(float DeltaTime)
     }
 
 
-    if (GEngine && playerState)
+    if (playerState)
     {
         int32 playerId = playerState->GetPlayerId();
         FString hitDebugMessage = interactionTarget ? interactionTarget->GetName() : TEXT("NullPtr");
-        GEngine->AddOnScreenDebugMessage(playerId, 1.0f, FColor(0, 192, 64),
-                                         FString::Printf(TEXT("Interaction Target: %s"), *hitDebugMessage));
+        UE_LOG(LogTemp, Log, TEXT("Interaction Target: %s"), *hitDebugMessage);
     }
 }
 
@@ -195,11 +194,7 @@ void AADITLOIS_PlayerPawn::BoxComponent_ComponentHit(UPrimitiveComponent *HitCom
     if (OtherActor)
     {
         UE_LOG(LogTemp, Warning, TEXT("Hit detected with actor: %s"), *OtherActor->GetName());
-        if (GEngine)
-        {
-            GEngine->AddOnScreenDebugMessage(0, 1.0f, FColor(0, 192, 64),
-                                             FString::Printf(TEXT("Hit detected with actor: %s"), *OtherActor->GetName()));
-        }
+
 
         ConditionalClimbEnable();
 

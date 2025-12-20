@@ -418,18 +418,10 @@ void AADITLOIS_PlayerController::OnActionInteract(const FInputActionValue &Value
                 if (actorToInteractWith == nullptr)
                 {
                     UE_LOG(LogTemp, Warning, TEXT("No actor to interact with."));
-                    if (GEngine)
-                    {
-                        GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("No actor to interact with."));
-                    }
                 }
                 else if (!actorToInteractWith->GetIsReplicated())
                 {
                     UE_LOG(LogTemp, Warning, TEXT("Actor to interact with is not replicated."));
-                    if (GEngine)
-                    {
-                        GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Actor to interact with is not replicated."));
-                    }
                 }
             }
         }

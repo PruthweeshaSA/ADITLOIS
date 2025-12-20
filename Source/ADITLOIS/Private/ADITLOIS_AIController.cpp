@@ -20,20 +20,15 @@ void AADITLOIS_AIController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("AI Controller BeginPlay called."));
-	}
+	UE_LOG(LogTemp, Log, TEXT("AI Controller BeginPlay called."));
 }
 
 void AADITLOIS_AIController::OnPossess(APawn *aPawn)
 {
 	Super::OnPossess(aPawn);
 
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("AI Controller OnPossess called."));
-	}
+
+	UE_LOG(LogTemp, Log, TEXT("AI Controller OnPossess called."));
 
 	if (ACharacter* PossessedCharacter = Cast<ACharacter>(aPawn))
 	{
@@ -67,10 +62,7 @@ void AADITLOIS_AIController::ScanForInteractables()
 	{
 		// No pawn to control, stop scanning.
 		GetWorld()->GetTimerManager().ClearTimer(ScanTimerHandle);
-		if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("AIcontroller: No pawn to control, stop scanning."));
-		}
+		UE_LOG(LogTemp, Log, TEXT("AIcontroller: No pawn to control, stop scanning."));
 		return;
 	}
 
@@ -92,10 +84,8 @@ void AADITLOIS_AIController::ScanForInteractables()
 			// 3. Check if within the scan radius
 			if (DistanceSq <= (ScanRadius * ScanRadius))
 			{
-				if (GEngine)
-				{
-					GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("AIcontroller: Target found within scan radius"));
-				}
+				
+				UE_LOG(LogTemp, Log, TEXT("AIcontroller: Target found within scan radius"));
 			
 				// 4. Check if it's the closest one so far
 				if (DistanceSq < ClosestDistanceSq)
@@ -134,10 +124,6 @@ void AADITLOIS_AIController::ScanForInteractables()
 
 		
 		UE_LOG(LogTemp, Log, TEXT("AIController: Found and moving towards Interactable: %s"), *ClosestTarget->GetName());
-		if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("AIController: Found and moving towards Interactable"));
-		}
 	}
 	else
 	{
@@ -150,10 +136,7 @@ void AADITLOIS_AIController::ScanForInteractables()
 			if (NavSystem && NavSystem->GetRandomPointInNavigableRadius(CurrentLocation, ScanRadius, RandomLocation))
 			{
 				MoveToLocation(RandomLocation.Location);
-				if (GEngine)
-				{
-					GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("AIController: Moving to random location."));
-				}
+				UE_LOG(LogTemp, Log, TEXT("AIController: Moving to random location."));
 			}
 		}
 
@@ -186,8 +169,5 @@ void AADITLOIS_AIController::OnMoveCompleted(FAIRequestID RequestID, const FPath
 		);
 	}
 
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("AIController: Movement completed, restarting scan."));
-	}
+	UE_LOG(LogTemp, Log, TEXT("AIController: Movement completed, restarting scan."));
 }

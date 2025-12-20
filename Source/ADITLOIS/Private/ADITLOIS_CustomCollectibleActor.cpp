@@ -35,10 +35,8 @@ void AADITLOIS_CustomCollectibleActor::Tick(float DeltaTime)
 void AADITLOIS_CustomCollectibleActor::Interact_Implementation(AActor *Interactor)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Custom Collectible Interacted by %s"), *GetNameSafe(Interactor));
-	if(GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(0, 5.0f, FColor::Yellow, FString::Printf(TEXT("You have interacted with %s"), *GetName()));
-	}
+	UE_LOG(LogTemp, Warning, TEXT("You have interacted with %s"), *GetName());
+	
 	// increment score through GameState
 	APawn* InteractorPawn = Cast<APawn>(Interactor);
 	if (AADITLOIS_GameModeBase* GM = Cast<AADITLOIS_GameModeBase>(GetWorld()->GetAuthGameMode()))

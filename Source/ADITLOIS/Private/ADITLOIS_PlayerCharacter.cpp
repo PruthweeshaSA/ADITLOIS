@@ -93,11 +93,11 @@ void AADITLOIS_PlayerCharacter::Tick(float DeltaTime)
 		// interactionTarget = bHit ? this->hitResult.GetActor() : nullptr;
 	}
 
-	if (GEngine && playerState)
+	if (playerState)
 	{
 		int32 playerId = playerState->GetPlayerId();
 		FString hitDebugMessage = interactionTarget ? interactionTarget->GetName() : FString::Printf(TEXT("NullPtr"));
-		GEngine->AddOnScreenDebugMessage(playerId, 1.0f, FColor(0, 192, 64), FString::Printf(TEXT("Interaction Target: %s"), *hitDebugMessage));
+		UE_LOG(LogTemp, Log, TEXT("Interaction Target: %s"), *hitDebugMessage);
 	}
 }
 
