@@ -65,45 +65,6 @@ void AADITLOIS_PlayerCharacter::PossessedBy(AController *NewController)
 void AADITLOIS_PlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	TObjectPtr<APlayerController> playerController = Cast<APlayerController>(GetController());
-
-	if (playerController)
-	{
-		playerController->GetPlayerViewPoint(startPoint, viewRotation);
-	}
-
-	startPoint = startPoint + viewRotation.Vector() * (springArm->TargetArmLength);
-	endPoint = startPoint + viewRotation.Vector() * (500.0f);
-
-	FCollisionQueryParams TraceParams(FName(TEXT("")), false, this);
-
-	bool bHit = GetWorld()->LineTraceSingleByChannel(this->hitResult, startPoint, endPoint, ECC_Visibility, TraceParams);
-
-	TObjectPtr<APlayerState> playerState = playerController ? playerController->PlayerState : nullptr;
-
-	if (HasAuthority())
-	{
-		interactionTarget = bHit ? this->hitResult.GetActor() : nullptr;
-	}
-	else
-	{
-		FHitResult localHitResult = this->hitResult;
-		ServerSetInteractionTarget(bHit, localHitResult);
-		// interactionTarget = bHit ? this->hitResult.GetActor() : nullptr;
-	}
-
-	if (playerState)
-	{
-		int32 playerId = playerState->GetPlayerId();
-		FString hitDebugMessage = interactionTarget ? interactionTarget->GetName() : FString::Printf(TEXT("NullPtr"));
-		UE_LOG(LogTemp, Log, TEXT("Interaction Target: %s"), *hitDebugMessage);
-	}
-}
-
-void AADITLOIS_PlayerCharacter::ServerSetInteractionTarget_Implementation(bool bHit, FHitResult localHitResult)
-{
-	this->interactionTarget = bHit ? localHitResult.GetActor() : nullptr;
 }
 
 // Called to bind functionality to input
@@ -116,7 +77,6 @@ void AADITLOIS_PlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimePrope
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(AADITLOIS_PlayerCharacter, interactionTarget);
 	DOREPLIFETIME(AADITLOIS_PlayerCharacter, springArm);
 	DOREPLIFETIME(AADITLOIS_PlayerCharacter, camera);
 }

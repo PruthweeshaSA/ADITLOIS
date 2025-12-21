@@ -12,6 +12,7 @@
 #include "IADITLOIS_Interactable_Interface.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/PlayerState.h"
 
 AADITLOIS_PlayerController::AADITLOIS_PlayerController()
 {
@@ -169,6 +170,50 @@ void AADITLOIS_PlayerController::BeginPlay()
     this->bShowMouseCursor = false;
 
     this->playerScore = 0;
+}
+
+void AADITLOIS_PlayerController::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+    this->ComputeInteractionTarget();
+}
+
+void AADITLOIS_PlayerController::ComputeInteractionTarget()
+{
+    TObjectPtr<AADITLOIS_PlayerCharacter> pCharacter = Cast<AADITLOIS_PlayerCharacter>(GetPawn());
+    if (pCharacter)
+    {
+        GetPlayerViewPoint(startPoint, viewRotation);
+
+        startPoint = startPoint + viewRotation.Vector() * (pCharacter->springArm->TargetArmLength);
+        endPoint = startPoint + viewRotation.Vector() * (500.0f);
+
+        FCollisionQueryParams TraceParams(FName(TEXT("")), false, GetPawn());
+
+        bool bHit = GetWorld()->LineTraceSingleByChannel(this->hitResult, startPoint, endPoint, ECC_Visibility, TraceParams);
+
+        if (HasAuthority())
+        {
+            interactionTarget = bHit ? this->hitResult.GetActor() : nullptr;
+        }
+        else
+        {
+            FHitResult localHitResult = this->hitResult;
+            ServerSetInteractionTarget(bHit, localHitResult);
+        }
+
+        if (PlayerState)
+        {
+            int32 playerId = PlayerState->GetPlayerId();
+            FString hitDebugMessage = interactionTarget ? interactionTarget->GetName() : FString::Printf(TEXT("NullPtr"));
+            UE_LOG(LogTemp, Log, TEXT("PC Interaction Target: %s"), *hitDebugMessage);
+        }
+    }
+    else
+    {
+        interactionTarget = nullptr;
+    }
 }
 
 void AADITLOIS_PlayerController::OnPossess(APawn *aPawn)
@@ -399,10 +444,7 @@ void AADITLOIS_PlayerController::OnActionInteract(const FInputActionValue &Value
     {
         if (this->GetPawn())
         {
-            TObjectPtr<AADITLOIS_PlayerCharacter> pCharacter = Cast<AADITLOIS_PlayerCharacter>(this->GetPawn());
-            if (!pCharacter)
-                return;
-            TObjectPtr<AActor> actorToInteractWith = pCharacter->interactionTarget;
+            TObjectPtr<AActor> actorToInteractWith = this->interactionTarget;
             if (actorToInteractWith && actorToInteractWith->GetIsReplicated())
             {
                 if (actorToInteractWith->GetClass()->ImplementsInterface(UADITLOIS_Interactable_Interface::StaticClass()))
@@ -436,10 +478,7 @@ void AADITLOIS_PlayerController::ServerOnActionInteract_Implementation(const FIn
 {
     if (this->GetPawn())
     {
-        TObjectPtr<AADITLOIS_PlayerCharacter> pCharacter = Cast<AADITLOIS_PlayerCharacter>(this->GetPawn());
-        if (!pCharacter)
-            return;
-        TObjectPtr<AActor> actorToInteractWith = pCharacter->interactionTarget;
+        TObjectPtr<AActor> actorToInteractWith = this->interactionTarget;
         if (actorToInteractWith && actorToInteractWith->GetIsReplicated())
         {
             if (actorToInteractWith->GetClass()->ImplementsInterface(UADITLOIS_Interactable_Interface::StaticClass()))
@@ -530,6 +569,11 @@ void AADITLOIS_PlayerController::ServerOnActionCameraZoom_Implementation(const F
     characterSpringArm->SocketOffset = FVector(0.0f, yOffset, zOffset);
 
     ForceNetUpdate();
+}
+
+void AADITLOIS_PlayerController::ServerSetInteractionTarget_Implementation(bool bHit, FHitResult localHitResult)
+{
+	this->interactionTarget = bHit ? localHitResult.GetActor() : nullptr;
 }
 
 void AADITLOIS_PlayerController::OnActionSaveGame()
@@ -646,4 +690,5 @@ void AADITLOIS_PlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProp
     DOREPLIFETIME(AADITLOIS_PlayerController, playerPawn);
     DOREPLIFETIME(AADITLOIS_PlayerController, playerScore);
     DOREPLIFETIME(AADITLOIS_PlayerController, playerControllerRotation);
+    DOREPLIFETIME(AADITLOIS_PlayerController, interactionTarget);
 }

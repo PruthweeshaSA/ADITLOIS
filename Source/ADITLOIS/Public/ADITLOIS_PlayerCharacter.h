@@ -53,9 +53,6 @@ public:
 	UPROPERTY()
 	FHitResult hitResult;
 
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
-	TObjectPtr<AActor> interactionTarget = nullptr;
-
 	UPROPERTY()
 	FVector startPoint;
 
@@ -64,7 +61,4 @@ public:
 
 	UPROPERTY()
 	FVector endPoint;
-
-	UFUNCTION(Server, Reliable)
-	virtual void ServerSetInteractionTarget(bool bHit, FHitResult localHitResult);
 };

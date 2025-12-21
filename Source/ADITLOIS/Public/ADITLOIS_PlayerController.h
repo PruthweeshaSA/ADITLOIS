@@ -27,6 +27,7 @@ class UADITLOIS_Interactable_Interface;
 class APawn;
 class ACharacter;
 class UFloatingPawnMovement;
+struct FHitResult;
 
 /**
  *
@@ -48,6 +49,13 @@ private:
 
 	UFUNCTION(BlueprintCallable)
 	virtual void BeginPlay() override;
+
+	void ComputeInteractionTarget();
+
+public:
+    virtual void Tick(float DeltaTime) override;
+
+    
 
 private:
 	UPROPERTY(EditAnywhere)
@@ -98,9 +106,27 @@ public:
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
 	FRotator playerControllerRotation = FRotator(0.0f);
 
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<AActor> interactionTarget = nullptr;
+
 private:
 	UFUNCTION(Server, Reliable)
 	void ServerOnPossess(APawn *aPawn);
+
+	UFUNCTION(Server, Reliable)
+	void ServerSetInteractionTarget(bool bHit, FHitResult localHitResult);
+
+	UPROPERTY()
+	FHitResult hitResult;
+
+	UPROPERTY()
+	FVector startPoint;
+
+	UPROPERTY()
+	FRotator viewRotation;
+
+	UPROPERTY()
+	FVector endPoint;
 
 public:
 	UFUNCTION(BlueprintCallable)
