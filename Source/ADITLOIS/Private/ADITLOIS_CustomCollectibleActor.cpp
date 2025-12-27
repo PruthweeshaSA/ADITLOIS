@@ -59,6 +59,7 @@ void AADITLOIS_CustomCollectibleActor::Interact_Implementation(AActor *Interacto
 				{
 					FActorSpawnParameters SpawnParams;
 					SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+					RandomLocation.Location.Z += 160.0f; // slightly above ground
 					World->SpawnActor<AADITLOIS_CustomCollectibleActor>(GetClass(), RandomLocation.Location, FRotator::ZeroRotator, SpawnParams);
 				}
 			}
