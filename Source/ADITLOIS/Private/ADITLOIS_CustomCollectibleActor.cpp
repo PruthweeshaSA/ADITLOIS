@@ -55,11 +55,33 @@ void AADITLOIS_CustomCollectibleActor::Interact_Implementation(AActor *Interacto
 			if (UNavigationSystemV1* NavSystem = FNavigationSystem::GetCurrent<UNavigationSystemV1>(World))
 			{
 				FNavLocation RandomLocation;
-				if (NavSystem->GetRandomPointInNavigableRadius(GetActorLocation(), 2000.0f, RandomLocation))
+				bool bSpawnPointFound = false;
+				int Attempts = 0;
+				const int MaxAttempts = 20; // 100 is overkill for a 36% success area
+
+				// Try up to MaxAttempts times to find a point
+				while (Attempts < MaxAttempts && !bSpawnPointFound)
+				{
+					// 1. Get a random point within 50m
+					if (NavSystem->GetRandomPointInNavigableRadius(GetActorLocation(), 5000.0f, RandomLocation))
+					{
+						// 2. Check if it is OUTSIDE the 30m inner radius (The "Donut" hole)
+						if (FVector::DistSquared(GetActorLocation(), RandomLocation.Location) > (3000.0f * 3000.0f))
+						{
+							bSpawnPointFound = true;
+						}
+					}
+					Attempts++;
+				}
+
+				if (bSpawnPointFound)
 				{
 					FActorSpawnParameters SpawnParams;
 					SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-					RandomLocation.Location.Z += 160.0f; // slightly above ground
+					
+					// Adjust Z slightly
+					RandomLocation.Location.Z += 160.0f; 
+
 					World->SpawnActor<AADITLOIS_CustomCollectibleActor>(GetClass(), RandomLocation.Location, FRotator::ZeroRotator, SpawnParams);
 				}
 			}
