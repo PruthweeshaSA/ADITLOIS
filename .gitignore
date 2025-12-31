@@ -4,6 +4,9 @@ Content/*
 !Content/Blueprints/**
 !Content/Assets/**
 !Content/Assets/
+!Content/Movies/
+!Content/Splash/
+# !Content/StarterContent
 Intermediate/*
 Saved/*
 DerivedDataCache/*
