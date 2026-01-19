@@ -207,7 +207,7 @@ void AADITLOIS_PlayerController::ComputeInteractionTarget()
         {
             int32 playerId = PlayerState->GetPlayerId();
             FString hitDebugMessage = interactionTarget ? interactionTarget->GetName() : FString::Printf(TEXT("NullPtr"));
-            UE_LOG(LogTemp, Log, TEXT("PC Interaction Target: %s"), *hitDebugMessage);
+            // UE_LOG(LogTemp, Log, TEXT("PC Interaction Target: %s"), *hitDebugMessage);
         }
     }
     else
