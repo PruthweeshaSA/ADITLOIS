@@ -54,9 +54,10 @@ void AADITLOIS_AIController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (GetPawn()->GetVelocity().Size() < 0.1f)
+	if (GetPawn()->GetVelocity().Size() < 0.01f && OrthoNavWaypoint.IsSet() && OrthoNavWaypoint.GetValue().Equals(GetPawn()->GetActorLocation(), ACCEPTANCE_RADIUS))
 	{
-		ScanForInteractables();
+		DrawDebugSphere(this->GetWorld(),GetPawn()->GetActorLocation(), 50.0f, 1.0, FColor::Yellow, false, 10.0f);
+		MoveToLocation(GetPawn()->GetActorLocation()+FVector(400.0f, 0.0f, 0.0f), ACCEPTANCE_RADIUS);
 	}
 }
 
@@ -103,11 +104,11 @@ FVector AADITLOIS_AIController::GetNavigableOrthoWaypoint(FVector TargetLocation
 		if (bHitWall)
 		{
 			DrawDebugSphere(this->GetWorld(),NewNavigableLocation, 50.0f, 1.0, FColor::Red, false, 10.0f);
-			return NewNavigableLocation+(CurrentLocation-NewNavigableLocation).GetSafeNormal()*50.0f;
+			return NewNavigableLocation;
 		}
 		else
 		{
-			return TargetLocation;
+			return TargetLocation + (TargetLocation - CurrentLocation).GetSafeNormal()*(10.0f*ACCEPTANCE_RADIUS);
 		}
 	}
 	return TargetLocation;
@@ -123,40 +124,51 @@ FVector AADITLOIS_AIController::GetOrthoWaypoint(FVector TargetLocation)
 		FVector PrimaryComponentProjection = differenceVector.ProjectOnTo(PrimaryAxis);
 		FVector SecondaryComponentProjection = differenceVector.ProjectOnTo(SecondaryAxis);
 		FVector NewOrthoWaypoint;
+
 		if (SecondaryComponentProjection.Size2D() == 0)
-		{
-			if (PrimaryComponentProjection.Size2D() == 0 && CurrentTargetActor != nullptr)
-			{
-				NavWaypoint = GetNavWaypoint(CurrentTargetActor->GetActorLocation());
-				OrthoNavWaypoint = GetOrthoWaypoint(CurrentTargetActor->GetActorLocation());
-				MoveToLocation(OrthoNavWaypoint.GetValue());
-				DrawDebugSphere(this->GetWorld(),OrthoNavWaypoint.GetValue(), 50.0f, 1.0, FColor::Green, false, 10.0f);
-				return OrthoNavWaypoint.GetValue();
-			}
-			
+		{	
 			NewOrthoWaypoint = GetNavigableOrthoWaypoint(GetPawn()->GetActorLocation() + PrimaryComponentProjection);
-			DrawDebugSphere(this->GetWorld(),NewOrthoWaypoint, 50.0f, 1.0, FColor::Green, false, 10.0f);
-			return NewOrthoWaypoint;
 		}
 		else if (PrimaryComponentProjection.Size2D() == 0)
 		{
 			NewOrthoWaypoint = GetNavigableOrthoWaypoint(GetPawn()->GetActorLocation() + SecondaryComponentProjection);
-			DrawDebugSphere(this->GetWorld(),NewOrthoWaypoint, 50.0f, 1.0, FColor::Green, false, 10.0f);
-			return NewOrthoWaypoint;
 		}
 		else
 		{
 			float RandomFloat = FMath::FRandRange(0.0f, 1.0f);
-			if (RandomFloat < 0.5f)
-			{
-				NewOrthoWaypoint = GetNavigableOrthoWaypoint(GetPawn()->GetActorLocation() + PrimaryComponentProjection);
-				DrawDebugSphere(this->GetWorld(),NewOrthoWaypoint, 50.0f, 1.0, FColor::Green, false, 10.0f);
-				return NewOrthoWaypoint;
+
+			FVector LongerComponent = (PrimaryComponentProjection.Size2D() > SecondaryComponentProjection.Size2D())? PrimaryComponentProjection : SecondaryComponentProjection;
+			FVector ShorterComponent = (PrimaryComponentProjection.Size2D() > SecondaryComponentProjection.Size2D())? SecondaryComponentProjection : PrimaryComponentProjection;
+
+			FVector LongerLegFirstWaypoint = GetNavigableOrthoWaypoint(GetPawn()->GetActorLocation() + LongerComponent);
+			FVector ShorterLegFirstWaypoint = GetNavigableOrthoWaypoint(GetPawn()->GetActorLocation() + ShorterComponent);
+
+
+			UNavigationSystemV1 *NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
+			FVector PotentialHitPoint;
+			
+			if (!NavSys->NavigationRaycast(this, LongerLegFirstWaypoint, NavWaypoint.GetValue(), PotentialHitPoint))
+			{	
+				NewOrthoWaypoint = LongerLegFirstWaypoint;
 			}
-			NewOrthoWaypoint = GetNavigableOrthoWaypoint(GetPawn()->GetActorLocation() + SecondaryComponentProjection);
-			DrawDebugSphere(this->GetWorld(),NewOrthoWaypoint, 50.0f, 1.0, FColor::Green, false, 10.0f);
-			return NewOrthoWaypoint;
+			else if (!NavSys->NavigationRaycast(this, ShorterLegFirstWaypoint, NavWaypoint.GetValue(), PotentialHitPoint) && FVector::Dist2D(PotentialHitPoint, GetPawn()->GetActorLocation()) < FVector::Dist2D(PotentialHitPoint, NavWaypoint.GetValue()))
+			{
+				NewOrthoWaypoint = ShorterLegFirstWaypoint;
+			}
+			else
+			{
+				if (RandomFloat < 0.5f)
+				{
+					NewOrthoWaypoint = GetNavigableOrthoWaypoint(GetPawn()->GetActorLocation() + PrimaryComponentProjection);
+				}
+				else
+				{	
+					NewOrthoWaypoint = GetNavigableOrthoWaypoint(GetPawn()->GetActorLocation() + SecondaryComponentProjection);
+				}
+			}
 		}
+		DrawDebugSphere(this->GetWorld(),NewOrthoWaypoint, 50.0f, 1.0, FColor::Green, false, 10.0f);
+		return NewOrthoWaypoint;
 	}
 	else
 	{
@@ -166,6 +178,7 @@ FVector AADITLOIS_AIController::GetOrthoWaypoint(FVector TargetLocation)
 
 void AADITLOIS_AIController::ScanForInteractables()
 {
+	LastScannedTimestamp = GetWorld()->GetTimeSeconds();
 	APawn *ControlledPawn = GetPawn();
 	if (!ControlledPawn)
 		return;
@@ -265,17 +278,14 @@ void AADITLOIS_AIController::ScanForInteractables()
 
 void AADITLOIS_AIController::OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult &Result)
 {
-	// Movement has completed, restart scanning for interactables
-	if (GetWorld())
+	if ((LastScannedTimestamp + 0.5) < GetWorld()->GetTimeSeconds())
 	{
-		GetWorld()->GetTimerManager().SetTimer(
-			ScanTimerHandle,
-			this,
-			&AADITLOIS_AIController::ScanForInteractables,
-			ScanInterval, // Time between calls
-			true		  // Loop/repeat
-		);
+		ScanForInteractables();
+		UE_LOG(LogTemp, Log, TEXT("AIController: Movement completed, restarting scan."));
 	}
-
-	UE_LOG(LogTemp, Log, TEXT("AIController: Movement completed, restarting scan."));
+	else
+	{
+		// ScanForInteractables();
+		UE_LOG(LogTemp, Log, TEXT("AIController: Movement completed, scan recently done, skipping."));
+	}
 }

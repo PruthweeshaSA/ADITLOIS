@@ -32,6 +32,8 @@ private:
 
 	float ACCEPTANCE_RADIUS = 10.0f;
 
+	double LastScannedTimestamp = 0.0;
+
 
 
 	UPROPERTY()
