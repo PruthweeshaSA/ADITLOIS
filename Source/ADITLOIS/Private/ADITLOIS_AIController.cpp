@@ -147,11 +147,11 @@ FVector AADITLOIS_AIController::GetOrthoWaypoint(FVector TargetLocation)
 			UNavigationSystemV1 *NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
 			FVector PotentialHitPoint;
 			
-			if (!NavSys->NavigationRaycast(this, LongerLegFirstWaypoint, NavWaypoint.GetValue(), PotentialHitPoint))
+			if (!NavSys->NavigationRaycast(this, LongerLegFirstWaypoint, NavWaypoint.GetValue(), PotentialHitPoint) || FVector::Dist2D(PotentialHitPoint, NavWaypoint.GetValue()) < 10.0 * ACCEPTANCE_RADIUS)
 			{	
 				NewOrthoWaypoint = LongerLegFirstWaypoint;
 			}
-			else if (!NavSys->NavigationRaycast(this, ShorterLegFirstWaypoint, NavWaypoint.GetValue(), PotentialHitPoint) && FVector::Dist2D(PotentialHitPoint, GetPawn()->GetActorLocation()) < FVector::Dist2D(PotentialHitPoint, NavWaypoint.GetValue()))
+			else if (!NavSys->NavigationRaycast(this, ShorterLegFirstWaypoint, NavWaypoint.GetValue(), PotentialHitPoint) || FVector::Dist2D(PotentialHitPoint, NavWaypoint.GetValue()) < 10.0 * ACCEPTANCE_RADIUS)
 			{
 				NewOrthoWaypoint = ShorterLegFirstWaypoint;
 			}
