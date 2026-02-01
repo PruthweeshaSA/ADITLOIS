@@ -147,23 +147,23 @@ FVector AADITLOIS_AIController::GetOrthoWaypoint(FVector TargetLocation)
 			UNavigationSystemV1 *NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
 			FVector PotentialHitPoint;
 			
-			if (!NavSys->NavigationRaycast(this, LongerLegFirstWaypoint, NavWaypoint.GetValue(), PotentialHitPoint) || FVector::Dist2D(PotentialHitPoint, NavWaypoint.GetValue()) < 10.0 * ACCEPTANCE_RADIUS)
+			if (!NavSys->NavigationRaycast(this, LongerLegFirstWaypoint, NavWaypoint.GetValue(), PotentialHitPoint) || FVector::Dist2D(PotentialHitPoint, TargetLocation) < 400.0f)
 			{	
 				NewOrthoWaypoint = LongerLegFirstWaypoint;
 			}
-			else if (!NavSys->NavigationRaycast(this, ShorterLegFirstWaypoint, NavWaypoint.GetValue(), PotentialHitPoint) || FVector::Dist2D(PotentialHitPoint, NavWaypoint.GetValue()) < 10.0 * ACCEPTANCE_RADIUS)
+			else if (!NavSys->NavigationRaycast(this, ShorterLegFirstWaypoint, NavWaypoint.GetValue(), PotentialHitPoint) || FVector::Dist2D(PotentialHitPoint, TargetLocation) < 400.0f)
 			{
 				NewOrthoWaypoint = ShorterLegFirstWaypoint;
 			}
 			else
 			{
-				if (RandomFloat < 0.5f)
+				if (FMath::FRandRange(0.0f, 1.0f) < 0.9f)
 				{
-					NewOrthoWaypoint = GetNavigableOrthoWaypoint(GetPawn()->GetActorLocation() + PrimaryComponentProjection);
+					NewOrthoWaypoint = GetNavigableOrthoWaypoint(GetPawn()->GetActorLocation() + LongerComponent);
 				}
 				else
 				{	
-					NewOrthoWaypoint = GetNavigableOrthoWaypoint(GetPawn()->GetActorLocation() + SecondaryComponentProjection);
+					NewOrthoWaypoint = GetNavigableOrthoWaypoint(GetPawn()->GetActorLocation() + LongerComponent);
 				}
 			}
 		}
