@@ -174,7 +174,7 @@ void AADITLOIS_PlayerController::BeginPlay()
 
 void AADITLOIS_PlayerController::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
+    Super::Tick(DeltaTime);
 
     this->ComputeInteractionTarget();
 }
@@ -348,12 +348,45 @@ void AADITLOIS_PlayerController::ServerOnActionLook_Implementation(FRotator cont
 void AADITLOIS_PlayerController::OnActionMove(const FInputActionValue &Value)
 {
 
+    FVector GlobalForwardVector = FVector(1.0f, 0.0f, 0.0f);
+    FVector GlobalRightVector = FVector(0.0f, 1.0f, 0.0f);
+
     FVector2D move = Value.Get<FVector2D>();
-    this->GetPawn()->SetActorRotation(FRotator(this->GetPawn()->GetActorRotation().Pitch,
-                                               this->GetPawn()->GetControlRotation().Yaw,
-                                               this->GetPawn()->GetActorRotation().Roll));
-    this->GetPawn()->AddMovementInput(this->GetPawn()->GetActorForwardVector(), move.Y);
-    this->GetPawn()->AddMovementInput(this->GetPawn()->GetActorRightVector(), move.X);
+
+    if (move.IsNearlyZero())
+    {
+        return;
+    }
+
+    FVector TargetDirection = (GetControlRotation().Vector() * move.Y) + (GetControlRotation().Vector().RotateAngleAxis(90.0f, FVector(0.0f, 0.0f, 1.0f)) * move.X);
+    TargetDirection.Z = 0.0f;
+    TargetDirection.Normalize();
+
+    if (abs(FVector::DotProduct(TargetDirection, GlobalForwardVector)) > abs(FVector::DotProduct(TargetDirection, GlobalRightVector)))
+    {
+        if (FVector::DotProduct(TargetDirection, GlobalForwardVector) < 0)
+        {
+            GetPawn()->AddMovementInput(GlobalForwardVector, -1 * sqrt(move.SquaredLength()));
+        }
+        else
+        {
+            GetPawn()->AddMovementInput(GlobalForwardVector, sqrt(move.SquaredLength()));
+        }
+    }
+    else
+    {
+        if (FVector::DotProduct(TargetDirection, GlobalRightVector) < 0)
+        {
+            GetPawn()->AddMovementInput(GlobalRightVector, -1 * sqrt(move.SquaredLength()));
+        }
+        else
+        {
+            GetPawn()->AddMovementInput(GlobalRightVector, sqrt(move.SquaredLength()));
+        }
+    }
+
+
+
 
     ServerOnActionMove(this->GetPawn()->GetActorLocation(), this->GetPawn()->GetActorRotation());
 }
@@ -573,7 +606,7 @@ void AADITLOIS_PlayerController::ServerOnActionCameraZoom_Implementation(const F
 
 void AADITLOIS_PlayerController::ServerSetInteractionTarget_Implementation(bool bHit, FHitResult localHitResult)
 {
-	this->interactionTarget = bHit ? localHitResult.GetActor() : nullptr;
+    this->interactionTarget = bHit ? localHitResult.GetActor() : nullptr;
 }
 
 void AADITLOIS_PlayerController::OnActionSaveGame()
