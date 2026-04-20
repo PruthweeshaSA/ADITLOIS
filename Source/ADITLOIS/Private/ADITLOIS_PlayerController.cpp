@@ -362,6 +362,8 @@ void AADITLOIS_PlayerController::OnActionMove(const FInputActionValue &Value)
     TargetDirection.Z = 0.0f;
     TargetDirection.Normalize();
 
+    GetPawn()->SetActorRotation(FRotator(0.0f, GetControlRotation().Yaw, 0.0f));
+
     if (abs(FVector::DotProduct(TargetDirection, GlobalForwardVector)) > abs(FVector::DotProduct(TargetDirection, GlobalRightVector)))
     {
         if (FVector::DotProduct(TargetDirection, GlobalForwardVector) < 0)
