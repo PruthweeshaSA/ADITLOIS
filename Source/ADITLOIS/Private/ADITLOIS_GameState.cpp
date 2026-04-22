@@ -4,6 +4,8 @@
 AADITLOIS_GameState::AADITLOIS_GameState()
 {
 	GlobalScore = 0;
+	bIsMovementConstrained = true;
+	fPoleAngle = 0.0f;
 }
 
 void AADITLOIS_GameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -26,4 +28,14 @@ void AADITLOIS_GameState::ResetGlobalScore()
 int32 AADITLOIS_GameState::GetGlobalScore() const
 {
 	return GlobalScore;
+}
+
+float AADITLOIS_GameState::GetPoleAngle()
+{
+	return fPoleAngle;
+}
+
+bool AADITLOIS_GameState::GetIsMovementConstrained()
+{
+	return bIsMovementConstrained;
 }

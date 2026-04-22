@@ -19,6 +19,12 @@ public:
 	UPROPERTY(Replicated, BlueprintReadWrite, Category = "Score")
 	int32 GlobalScore;
 
+	UPROPERTY(Replicated, BlueprintReadWrite, Category = "MovementConstraint")
+	bool bIsMovementConstrained;
+
+	UPROPERTY(Replicated, BlueprintReadWrite, Category = "PoleAngle")
+	float fPoleAngle;
+
 public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -30,4 +36,10 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Score")
 	int32 GetGlobalScore() const;
+
+	UFUNCTION(BlueprintCallable, Category = "PoleAngle")
+	float GetPoleAngle();
+
+	UFUNCTION(BlueprintCallable, Category = "MovementConstraint")
+	bool GetIsMovementConstrained();
 };

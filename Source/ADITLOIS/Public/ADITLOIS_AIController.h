@@ -4,11 +4,14 @@
 #include "AIController.h"
 #include "Navigation/PathFollowingComponent.h"
 #include <vector> // Required for std::vector
+#include "ADITLOIS_GameState.h"
+
 #include "ADITLOIS_AIController.generated.h"
 
 class IADITLOIS_Interactable_Interface;
 class UNavigationSystemV1;
 class UNavigationPath;
+class AADITLOIS_GameState;
 
 UCLASS()
 class ADITLOIS_API AADITLOIS_AIController : public AAIController
@@ -65,5 +68,8 @@ private:
     virtual void OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult &Result) override;
 
 	virtual void Tick(float DeltaTime) override;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<AADITLOIS_GameState> gameState = nullptr;
 
 };

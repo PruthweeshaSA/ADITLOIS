@@ -11,6 +11,7 @@
 #include "InputAction.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "ADITLOIS_GameState.h"
 
 #include "ADITLOIS_PlayerController.generated.h"
 
@@ -28,10 +29,9 @@ class APawn;
 class ACharacter;
 class UFloatingPawnMovement;
 struct FHitResult;
+class AADITLOIS_GameState;
 
-/**
- *
- */
+
 UCLASS()
 class ADITLOIS_API AADITLOIS_PlayerController : public APlayerController
 {
@@ -93,6 +93,9 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UInputAction> ActionPauseGame = nullptr;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<AADITLOIS_GameState> gameState = nullptr;
 
 public:
 	void GetLifetimeReplicatedProps(class TArray<FLifetimeProperty> &OutLifetimeProps) const override;

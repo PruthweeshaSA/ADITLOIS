@@ -8,6 +8,7 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetSystemLibrary.h" // Required for SphereOverlap
+#include "ADITLOIS_GameState.h"
 
 AADITLOIS_AIController::AADITLOIS_AIController()
 {
@@ -21,6 +22,8 @@ void AADITLOIS_AIController::BeginPlay()
 {
 	Super::BeginPlay();
 	UE_LOG(LogTemp, Log, TEXT("AI Controller BeginPlay called."));
+	gameState = Cast<AADITLOIS_GameState>(GetWorld()->GetGameState());
+
 }
 
 void AADITLOIS_AIController::OnPossess(APawn *aPawn)
@@ -116,6 +119,11 @@ FVector AADITLOIS_AIController::GetNavigableOrthoWaypoint(FVector TargetLocation
 
 FVector AADITLOIS_AIController::GetOrthoWaypoint(FVector TargetLocation)
 {
+	if (gameState && !(gameState->GetIsMovementConstrained()))
+	{
+		return TargetLocation;
+	}
+	
 	FVector PrimaryAxis = FVector(1.0, 0.0, 0.0);
 	FVector SecondaryAxis = FVector(0.0, 1.0, 0);
 	if (NavWaypoint.IsSet())

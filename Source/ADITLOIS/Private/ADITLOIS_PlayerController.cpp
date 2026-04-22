@@ -13,6 +13,7 @@
 #include "GameFramework/FloatingPawnMovement.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerState.h"
+#include "ADITLOIS_GameState.h"
 
 AADITLOIS_PlayerController::AADITLOIS_PlayerController()
 {
@@ -170,6 +171,8 @@ void AADITLOIS_PlayerController::BeginPlay()
     this->bShowMouseCursor = false;
 
     this->playerScore = 0;
+
+    gameState = Cast<AADITLOIS_GameState>(GetWorld()->GetGameState());
 }
 
 void AADITLOIS_PlayerController::Tick(float DeltaTime)
@@ -364,29 +367,35 @@ void AADITLOIS_PlayerController::OnActionMove(const FInputActionValue &Value)
 
     GetPawn()->SetActorRotation(FRotator(0.0f, GetControlRotation().Yaw, 0.0f));
 
-    if (abs(FVector::DotProduct(TargetDirection, GlobalForwardVector)) > abs(FVector::DotProduct(TargetDirection, GlobalRightVector)))
+    if (gameState && gameState->GetIsMovementConstrained())
     {
-        if (FVector::DotProduct(TargetDirection, GlobalForwardVector) < 0)
+        if (abs(FVector::DotProduct(TargetDirection, GlobalForwardVector)) > abs(FVector::DotProduct(TargetDirection, GlobalRightVector)))
         {
-            GetPawn()->AddMovementInput(GlobalForwardVector, -1 * sqrt(move.SquaredLength()));
+            if (FVector::DotProduct(TargetDirection, GlobalForwardVector) < 0)
+            {
+                GetPawn()->AddMovementInput(GlobalForwardVector, -1 * sqrt(move.SquaredLength()));
+            }
+            else
+            {
+                GetPawn()->AddMovementInput(GlobalForwardVector, sqrt(move.SquaredLength()));
+            }
         }
         else
         {
-            GetPawn()->AddMovementInput(GlobalForwardVector, sqrt(move.SquaredLength()));
+            if (FVector::DotProduct(TargetDirection, GlobalRightVector) < 0)
+            {
+                GetPawn()->AddMovementInput(GlobalRightVector, -1 * sqrt(move.SquaredLength()));
+            }
+            else
+            {
+                GetPawn()->AddMovementInput(GlobalRightVector, sqrt(move.SquaredLength()));
+            }
         }
     }
     else
     {
-        if (FVector::DotProduct(TargetDirection, GlobalRightVector) < 0)
-        {
-            GetPawn()->AddMovementInput(GlobalRightVector, -1 * sqrt(move.SquaredLength()));
-        }
-        else
-        {
-            GetPawn()->AddMovementInput(GlobalRightVector, sqrt(move.SquaredLength()));
-        }
+        GetPawn()->AddMovementInput(TargetDirection, sqrt(move.SquaredLength()));
     }
-
 
 
 
