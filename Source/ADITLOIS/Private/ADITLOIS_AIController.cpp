@@ -111,7 +111,7 @@ FVector AADITLOIS_AIController::GetNavigableOrthoWaypoint(FVector TargetLocation
 		}
 		else
 		{
-			return TargetLocation + (TargetLocation - CurrentLocation).GetSafeNormal()*(10.0f*ACCEPTANCE_RADIUS);
+			return TargetLocation + (TargetLocation - CurrentLocation).GetSafeNormal()*(5.0f*ACCEPTANCE_RADIUS);
 		}
 	}
 	return TargetLocation;
