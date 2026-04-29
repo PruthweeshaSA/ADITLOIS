@@ -151,17 +151,26 @@ FVector AADITLOIS_AIController::GetOrthoWaypoint(FVector TargetLocation)
 			FVector LongerLegFirstWaypoint = GetNavigableOrthoWaypoint(GetPawn()->GetActorLocation() + LongerComponent);
 			FVector ShorterLegFirstWaypoint = GetNavigableOrthoWaypoint(GetPawn()->GetActorLocation() + ShorterComponent);
 
+			FVector PreferredOrthoWaypoint = LongerLegFirstWaypoint;
+			FVector AlternativeOrthoWaypoint = ShorterLegFirstWaypoint;
 
 			UNavigationSystemV1 *NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
 			FVector PotentialHitPoint;
-			
-			if (!NavSys->NavigationRaycast(this, LongerLegFirstWaypoint, NavWaypoint.GetValue(), PotentialHitPoint) || FVector::Dist2D(PotentialHitPoint, TargetLocation) < 400.0f)
-			{	
-				NewOrthoWaypoint = LongerLegFirstWaypoint;
-			}
-			else if (!NavSys->NavigationRaycast(this, ShorterLegFirstWaypoint, NavWaypoint.GetValue(), PotentialHitPoint) || FVector::Dist2D(PotentialHitPoint, TargetLocation) < 400.0f)
+
+			if (FVector::DotProduct((ShorterLegFirstWaypoint - GetPawn()->GetActorLocation()).GetSafeNormal(), GetPawn()->GetVelocity().GetSafeNormal()) > 0.5f)
 			{
-				NewOrthoWaypoint = ShorterLegFirstWaypoint;
+				PreferredOrthoWaypoint = ShorterLegFirstWaypoint;
+				AlternativeOrthoWaypoint = LongerLegFirstWaypoint;
+			}
+			
+			// Prefer the waypoint that is in the direction we're already moving.
+			if (!NavSys->NavigationRaycast(this, PreferredOrthoWaypoint, NavWaypoint.GetValue(), PotentialHitPoint) || FVector::Dist2D(PotentialHitPoint, TargetLocation) < 400.0f)
+			{	
+				NewOrthoWaypoint = PreferredOrthoWaypoint;
+			}
+			else if (!NavSys->NavigationRaycast(this, AlternativeOrthoWaypoint, NavWaypoint.GetValue(), PotentialHitPoint) || FVector::Dist2D(PotentialHitPoint, TargetLocation) < 400.0f)
+			{
+				NewOrthoWaypoint = AlternativeOrthoWaypoint;
 			}
 			else
 			{
@@ -249,15 +258,6 @@ void AADITLOIS_AIController::ScanForInteractables()
 			OrthoNavWaypoint = GetOrthoWaypoint(BestTarget->GetActorLocation());
 			MoveToLocation(OrthoNavWaypoint.GetValue(), ACCEPTANCE_RADIUS);
 			UE_LOG(LogTemp, Log, TEXT("AI: Found new target %s, moving."), *BestTarget->GetName());
-		}
-		else if (NavWaypoint.IsSet() && OrthoNavWaypoint.IsSet())
-		{
-			if (GetPawn()->GetVelocity().Size() == 0.0f)
-			{
-				NavWaypoint = GetNavWaypoint(BestTarget->GetActorLocation());
-				OrthoNavWaypoint = GetOrthoWaypoint(BestTarget->GetActorLocation());
-				MoveToLocation(OrthoNavWaypoint.GetValue(), ACCEPTANCE_RADIUS);
-			}
 		}
 		else
 		{
