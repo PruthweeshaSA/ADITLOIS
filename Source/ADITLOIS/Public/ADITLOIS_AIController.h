@@ -33,7 +33,7 @@ private:
 	TOptional<FVector> NavWaypoint;
     TOptional<FVector> OrthoNavWaypoint;
 
-	float ACCEPTANCE_RADIUS = 10.0f;
+	float ACCEPTANCE_RADIUS = 30.0f;
 
 	double LastScannedTimestamp = 0.0;
 
