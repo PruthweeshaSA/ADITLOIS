@@ -57,10 +57,11 @@ void AADITLOIS_AIController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (GetPawn()->GetVelocity().Size() < 0.01f && OrthoNavWaypoint.IsSet() && OrthoNavWaypoint.GetValue().Equals(GetPawn()->GetActorLocation(), ACCEPTANCE_RADIUS))
+	APawn* ControlledPawn = GetPawn();
+	if (ControlledPawn && ControlledPawn->GetVelocity().Size() < 0.01f && OrthoNavWaypoint.IsSet() && OrthoNavWaypoint.GetValue().Equals(ControlledPawn->GetActorLocation(), ACCEPTANCE_RADIUS))
 	{
-		DrawDebugSphere(this->GetWorld(),GetPawn()->GetActorLocation(), 50.0f, 1.0, FColor::Yellow, false, 10.0f);
-		MoveToLocation(GetPawn()->GetActorLocation()+FVector(400.0f, 0.0f, 0.0f), ACCEPTANCE_RADIUS);
+		DrawDebugSphere(this->GetWorld(), ControlledPawn->GetActorLocation(), 50.0f, 1.0, FColor::Yellow, false, 10.0f);
+		MoveToLocation(ControlledPawn->GetActorLocation() + FVector(400.0f, 0.0f, 0.0f), ACCEPTANCE_RADIUS);
 	}
 }
 
@@ -68,13 +69,14 @@ void AADITLOIS_AIController::Tick(float DeltaTime)
 FVector AADITLOIS_AIController::GetNavWaypoint(FVector TargetLocation)
 {
 	UNavigationSystemV1 *NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
+	APawn* ControlledPawn = GetPawn();
 
-	if (NavSys)
+	if (NavSys && ControlledPawn)
 	{
 		// Calculate path without moving
 		UNavigationPath *CalculatedPath = NavSys->FindPathToLocationSynchronously(
 			this,						   // World Context
-			GetPawn()->GetActorLocation(), // Start
+			ControlledPawn->GetActorLocation(), // Start
 			TargetLocation				   // End
 		);
 
@@ -96,11 +98,13 @@ FVector AADITLOIS_AIController::GetNavWaypoint(FVector TargetLocation)
 FVector AADITLOIS_AIController::GetNavigableOrthoWaypoint(FVector TargetLocation)
 {
 	UNavigationSystemV1 *NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
-	if (NavSys)
+	APawn* ControlledPawn = GetPawn();
+
+	if (NavSys && ControlledPawn)
 	{
 		// Raycast returns TRUE if there is an OBSTRUCTION (a hit)
 		// Raycast returns FALSE if the path is clear
-		FVector CurrentLocation = GetPawn()->GetActorLocation();
+		FVector CurrentLocation = ControlledPawn->GetActorLocation();
 		FVector NewNavigableLocation;
 		bool bHitWall = NavSys->NavigationRaycast(this, CurrentLocation, TargetLocation, NewNavigableLocation);
 
@@ -124,22 +128,25 @@ FVector AADITLOIS_AIController::GetOrthoWaypoint(FVector TargetLocation)
 		return TargetLocation;
 	}
 	
+	APawn* ControlledPawn = GetPawn();
+	if (!ControlledPawn) return TargetLocation;
+
 	FVector PrimaryAxis = FVector(1.0, 0.0, 0.0);
 	FVector SecondaryAxis = FVector(0.0, 1.0, 0);
 	if (NavWaypoint.IsSet())
 	{
-		FVector differenceVector = NavWaypoint.GetValue() - GetPawn()->GetActorLocation();
+		FVector differenceVector = NavWaypoint.GetValue() - ControlledPawn->GetActorLocation();
 		FVector PrimaryComponentProjection = differenceVector.ProjectOnTo(PrimaryAxis);
 		FVector SecondaryComponentProjection = differenceVector.ProjectOnTo(SecondaryAxis);
 		FVector NewOrthoWaypoint;
 
 		if (SecondaryComponentProjection.Size2D() == 0)
 		{	
-			NewOrthoWaypoint = GetNavigableOrthoWaypoint(GetPawn()->GetActorLocation() + PrimaryComponentProjection);
+			NewOrthoWaypoint = GetNavigableOrthoWaypoint(ControlledPawn->GetActorLocation() + PrimaryComponentProjection);
 		}
 		else if (PrimaryComponentProjection.Size2D() == 0)
 		{
-			NewOrthoWaypoint = GetNavigableOrthoWaypoint(GetPawn()->GetActorLocation() + SecondaryComponentProjection);
+			NewOrthoWaypoint = GetNavigableOrthoWaypoint(ControlledPawn->GetActorLocation() + SecondaryComponentProjection);
 		}
 		else
 		{
@@ -148,8 +155,8 @@ FVector AADITLOIS_AIController::GetOrthoWaypoint(FVector TargetLocation)
 			FVector LongerComponent = (PrimaryComponentProjection.Size2D() > SecondaryComponentProjection.Size2D())? PrimaryComponentProjection : SecondaryComponentProjection;
 			FVector ShorterComponent = (PrimaryComponentProjection.Size2D() > SecondaryComponentProjection.Size2D())? SecondaryComponentProjection : PrimaryComponentProjection;
 
-			FVector LongerLegFirstWaypoint = GetNavigableOrthoWaypoint(GetPawn()->GetActorLocation() + LongerComponent);
-			FVector ShorterLegFirstWaypoint = GetNavigableOrthoWaypoint(GetPawn()->GetActorLocation() + ShorterComponent);
+			FVector LongerLegFirstWaypoint = GetNavigableOrthoWaypoint(ControlledPawn->GetActorLocation() + LongerComponent);
+			FVector ShorterLegFirstWaypoint = GetNavigableOrthoWaypoint(ControlledPawn->GetActorLocation() + ShorterComponent);
 
 			FVector PreferredOrthoWaypoint = LongerLegFirstWaypoint;
 			FVector AlternativeOrthoWaypoint = ShorterLegFirstWaypoint;
@@ -157,7 +164,7 @@ FVector AADITLOIS_AIController::GetOrthoWaypoint(FVector TargetLocation)
 			UNavigationSystemV1 *NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
 			FVector PotentialHitPoint;
 
-			if (FVector::DotProduct((ShorterLegFirstWaypoint - GetPawn()->GetActorLocation()).GetSafeNormal(), GetPawn()->GetVelocity().GetSafeNormal()) > 0.5f)
+			if (FVector::DotProduct((ShorterLegFirstWaypoint - ControlledPawn->GetActorLocation()).GetSafeNormal(), ControlledPawn->GetVelocity().GetSafeNormal()) > 0.5f)
 			{
 				PreferredOrthoWaypoint = ShorterLegFirstWaypoint;
 				AlternativeOrthoWaypoint = LongerLegFirstWaypoint;
@@ -174,14 +181,10 @@ FVector AADITLOIS_AIController::GetOrthoWaypoint(FVector TargetLocation)
 			}
 			else
 			{
-				if (FMath::FRandRange(0.0f, 1.0f) < 0.9f)
-				{
-					NewOrthoWaypoint = GetNavigableOrthoWaypoint(GetPawn()->GetActorLocation() + LongerComponent);
-				}
-				else
-				{	
-					NewOrthoWaypoint = GetNavigableOrthoWaypoint(GetPawn()->GetActorLocation() + LongerComponent);
-				}
+				NewOrthoWaypoint = GetOrthoWaypoint(PotentialHitPoint);
+				UE_LOG(LogTemp, Warning, TEXT("AIController: Both orthogonal waypoints are blocked, using recursive call with hit point."));
+				DrawDebugSphere(this->GetWorld(), PotentialHitPoint, 50.0f, 1.0, FColor::Purple, false, 10.0f);
+				// Recursive call with the hit point as the new target to find a navigable point
 			}
 		}
 		DrawDebugSphere(this->GetWorld(),NewOrthoWaypoint, 50.0f, 1.0, FColor::Green, false, 10.0f);

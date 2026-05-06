@@ -12,16 +12,27 @@
 AADITLOIS_GameModeBase::AADITLOIS_GameModeBase()
 {
     static ConstructorHelpers::FClassFinder<ACharacter> spawnClassFinder(TEXT("'/Game/Blueprints/Character_Blueprints/BP_ADITLOIS_PlayerCharacter'"));
-    characterClass = spawnClassFinder.Succeeded() ? spawnClassFinder.Class : nullptr;
-    if (characterClass)
+    playerCharacterClass = spawnClassFinder.Succeeded() ? spawnClassFinder.Class : nullptr;
+    if (playerCharacterClass)
     {
-        DefaultPawnClass = characterClass;
-        UE_LOG(LogTemp, Log, TEXT("characterClass BluePrint found: %s"), *characterClass->GetName());
+        DefaultPawnClass = playerCharacterClass;
+        UE_LOG(LogTemp, Log, TEXT("playerCharacterClass BluePrint found: %s"), *playerCharacterClass->GetName());
     }
     else
     {
         DefaultPawnClass = AADITLOIS_PlayerCharacter::StaticClass();
-        UE_LOG(LogTemp, Error, TEXT("characterClass BluePrint not found."));
+        UE_LOG(LogTemp, Error, TEXT("playerCharacterClass BluePrint not found."));
+    }
+
+    static ConstructorHelpers::FClassFinder<ACharacter> botSpawnClassFinder(TEXT("'/Game/Blueprints/Character_Blueprints/BP_ADITLOIS_BotCharacter'"));
+    botCharacterClass = botSpawnClassFinder.Succeeded() ? botSpawnClassFinder.Class : nullptr;
+    if (botCharacterClass)
+    {
+        UE_LOG(LogTemp, Log, TEXT("botCharacterClass BluePrint found: %s"), *botCharacterClass->GetName());
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("botCharacterClass BluePrint not found."));
     }
 
     static ConstructorHelpers::FClassFinder<APlayerController> controllerClassFinder(TEXT("'/Game/Blueprints/PlayerController_Blueprints/BP_ADITLOIS_PlayerController'"));
@@ -80,7 +91,7 @@ void AADITLOIS_GameModeBase::SpawnBots()
         bots.Add(botAdded);
         spawnLocation = FindPlayerStart(botAdded)->GetActorLocation();
         spawnRotator = FindPlayerStart(botAdded)->GetActorRotation();
-        TObjectPtr<AADITLOIS_PlayerCharacter> botCharacterAdded = Cast<AADITLOIS_PlayerCharacter>(GetWorld()->SpawnActor<AADITLOIS_PlayerCharacter>(characterClass, spawnLocation, spawnRotator));
+        TObjectPtr<AADITLOIS_BotCharacter> botCharacterAdded = Cast<AADITLOIS_BotCharacter>(GetWorld()->SpawnActor<AADITLOIS_BotCharacter>(botCharacterClass, spawnLocation, spawnRotator));
         botAdded->Possess(botCharacterAdded);
     }
 }

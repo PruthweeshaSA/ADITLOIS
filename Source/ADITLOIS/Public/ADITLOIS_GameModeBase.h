@@ -6,6 +6,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "ADITLOIS_PlayerController.h"
 #include "ADITLOIS_PlayerCharacter.h"
+#include "ADITLOIS_BotCharacter.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/PlayerController.h"
 #include "ADITLOIS_AIController.h"
@@ -45,7 +46,10 @@ public:
 	void AddScore(int32 ScoreToAdd);
 
 	UPROPERTY()
-	TSubclassOf<ACharacter> characterClass = nullptr;
+	TSubclassOf<ACharacter> playerCharacterClass = nullptr;
+
+	UPROPERTY()
+	TSubclassOf<ACharacter> botCharacterClass = nullptr;
 
 	UPROPERTY()
 	TSubclassOf<APlayerController> controllerClass = nullptr;
