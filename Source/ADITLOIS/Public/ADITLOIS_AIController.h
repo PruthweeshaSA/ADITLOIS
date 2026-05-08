@@ -50,6 +50,8 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	float ScanRadius = 10000.0f; // 100-meter radius
 
+	UNavigationSystemV1 *NavSys;
+
 	/**
 	 * Scans the surrounding area for objects implementing the interactable interface.
 	 * Moves the controlled pawn towards the closest one.
@@ -61,9 +63,7 @@ private:
 
     FVector GetNavWaypoint(FVector TargetLocation);
 
-    FVector GetNavigableOrthoWaypoint(FVector TargetLocation);
-
-    FVector GetOrthoWaypoint(FVector TargetLocation);
+    FVector GetIdealWaypoint();
 
     virtual void OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult &Result) override;
 
