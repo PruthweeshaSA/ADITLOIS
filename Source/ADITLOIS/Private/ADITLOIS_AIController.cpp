@@ -23,12 +23,15 @@ void AADITLOIS_AIController::BeginPlay()
 	Super::BeginPlay();
 	UE_LOG(LogTemp, Log, TEXT("AI Controller BeginPlay called."));
 	gameState = Cast<AADITLOIS_GameState>(GetWorld()->GetGameState());
+	
 }
 
 void AADITLOIS_AIController::OnPossess(APawn *aPawn)
 {
 	Super::OnPossess(aPawn);
 	UE_LOG(LogTemp, Log, TEXT("AI Controller OnPossess called."));
+
+	ControlledPawn = GetPawn();
 
 	if (ACharacter *PossessedCharacter = Cast<ACharacter>(aPawn))
 	{
@@ -61,7 +64,7 @@ void AADITLOIS_AIController::Tick(float DeltaTime)
 
 FVector AADITLOIS_AIController::GetNavWaypoint(FVector TargetLocation)
 {
-	APawn *ControlledPawn = GetPawn();
+	
 
 	if (NavSys && ControlledPawn)
 	{
@@ -89,7 +92,6 @@ FVector AADITLOIS_AIController::GetNavWaypoint(FVector TargetLocation)
 
 FVector AADITLOIS_AIController::GetIdealWaypoint()
 {
-	APawn *ControlledPawn = GetPawn();
 	if (!ControlledPawn)
 		return FVector::ZeroVector;
 
@@ -173,7 +175,6 @@ FVector AADITLOIS_AIController::GetIdealWaypoint()
 void AADITLOIS_AIController::ScanForInteractables()
 {
 	LastScannedTimestamp = GetWorld()->GetTimeSeconds();
-	APawn *ControlledPawn = GetPawn();
 	if (!ControlledPawn)
 		return;
 

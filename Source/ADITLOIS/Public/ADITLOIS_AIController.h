@@ -30,6 +30,8 @@ private:
 	/** Timer handle for the periodic scan function. */
 	FTimerHandle ScanTimerHandle;
 
+	APawn *ControlledPawn;
+
 	TOptional<FVector> NavWaypoint;
     TOptional<FVector> OrthoNavWaypoint;
 
