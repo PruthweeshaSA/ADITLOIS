@@ -32,10 +32,10 @@ private:
 
 	APawn *ControlledPawn;
 
-	TOptional<FVector> NavWaypoint;
+	TOptional<FVector> TargetLocation;
     TOptional<FVector> OrthoNavWaypoint;
 
-	float ACCEPTANCE_RADIUS = 30.0f;
+	float ACCEPTANCE_RADIUS = 1.0f;
 
 	double LastScannedTimestamp = 0.0;
 
@@ -62,9 +62,7 @@ private:
 
 	UFUNCTION(BlueprintCallable)
 	virtual void OnPossess(APawn *aPawn) override;
-
-    FVector GetNavWaypoint(FVector TargetLocation);
-
+	
     FVector GetIdealWaypoint();
 
     virtual void OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult &Result) override;

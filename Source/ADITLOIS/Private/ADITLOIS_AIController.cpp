@@ -14,7 +14,7 @@ AADITLOIS_AIController::AADITLOIS_AIController()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	CurrentTargetActor = nullptr;
-	NavWaypoint.Reset();
+	TargetLocation.Reset();
 	OrthoNavWaypoint.Reset();
 }
 
@@ -62,34 +62,6 @@ void AADITLOIS_AIController::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-FVector AADITLOIS_AIController::GetNavWaypoint(FVector TargetLocation)
-{
-	
-
-	if (NavSys && ControlledPawn)
-	{
-		// Calculate path without moving
-		UNavigationPath *CalculatedPath = NavSys->FindPathToLocationSynchronously(
-			this,								// World Context
-			ControlledPawn->GetActorLocation(), // Start
-			TargetLocation						// End
-		);
-
-		if (CalculatedPath && CalculatedPath->IsValid())
-		{
-			// TArray<FVector> containing Start -> Corners -> End
-			TArray<FVector> Points = CalculatedPath->PathPoints;
-
-			FVector NewNavWaypoint = (Points.Num() > 1) ? Points[1] : TargetLocation;
-
-			DrawDebugSphere(this->GetWorld(), NewNavWaypoint, 50.0f, 1.0, FColor::Magenta, false, 10.0f);
-			return NewNavWaypoint;
-		}
-	}
-
-	return TargetLocation;
-}
-
 FVector AADITLOIS_AIController::GetIdealWaypoint()
 {
 	if (!ControlledPawn)
@@ -97,78 +69,88 @@ FVector AADITLOIS_AIController::GetIdealWaypoint()
 
 	if (gameState && !(gameState->GetIsMovementConstrained()))
 	{
-		return (NavWaypoint.IsSet()) ? NavWaypoint.GetValue() : GetPawn()->GetActorLocation();
+		return (TargetLocation.IsSet()) ? TargetLocation.GetValue() : GetPawn()->GetActorLocation();
 	}
 
 	FVector PrimaryAxis = FVector(1.0, 0.0, 0.0);
 	FVector SecondaryAxis = FVector(0.0, 1.0, 0);
 
-	if (NavWaypoint.IsSet())
+	if (TargetLocation.IsSet())
 	{
-		FVector differenceVector = NavWaypoint.GetValue() - ControlledPawn->GetActorLocation();
-		FVector PrimaryComponentProjection = differenceVector.ProjectOnTo(PrimaryAxis);
-		FVector SecondaryComponentProjection = differenceVector.ProjectOnTo(SecondaryAxis);
-		FVector NewOrthoWaypoint = ControlledPawn->GetActorLocation();
-
-		float PrimaryFirstCost = -1.0f;
-		float SecondaryFirstCost = -1.0f;
-
-		UNavigationPath *NavPathToPrimaryWaypoint = nullptr;
-		UNavigationPath *NavPathFromPrimaryWaypoint = nullptr;
-		UNavigationPath *NavPathToSecondaryWaypoint = nullptr;
-		UNavigationPath *NavPathFromSecondaryWaypoint = nullptr;
+		FVector ToNav = TargetLocation.GetValue() - GetPawn()->GetActorLocation();
+		FVector PrimaryComponent = ToNav.ProjectOnTo(PrimaryAxis);
+		FVector SecondaryComponent = ToNav.ProjectOnTo(SecondaryAxis);
 
 
-		if (NavSys && ControlledPawn)
+		FVector PrimaryCandidate = PrimaryComponent.GetSafeNormal() * (200.0f * ACCEPTANCE_RADIUS) + GetPawn()->GetActorLocation();
+		FVector SecondaryCandidate = SecondaryComponent.GetSafeNormal() * (200.0f * ACCEPTANCE_RADIUS) + GetPawn()->GetActorLocation();
+		FVector AntiPrimaryCandidate = -PrimaryComponent.GetSafeNormal() * (200.0f * ACCEPTANCE_RADIUS) + GetPawn()->GetActorLocation();
+		FVector AntiSecondaryCandidate = -SecondaryComponent.GetSafeNormal() * (200.0f * ACCEPTANCE_RADIUS) + GetPawn()->GetActorLocation();
+
+		float PrimaryCost = 0.0f;
+		float SecondaryCost = 0.0f;
+		float AntiPrimaryCost = 0.0f;
+		float AntiSecondaryCost = 0.0f;
+
+
+
+		FVector HitLocation;
+		for (int i = 0; i < 4; i++)
 		{
-			FVector PrimaryFirstWaypoint = ControlledPawn->GetActorLocation() + PrimaryComponentProjection;
-			FVector SecondaryFirstWaypoint = ControlledPawn->GetActorLocation() + SecondaryComponentProjection;
-
-
-			// Raycast returns TRUE if there is an OBSTRUCTION (a hit)
-			// Raycast returns FALSE if the path is clear
-			FVector PrimaryMargin = (PrimaryComponentProjection.GetSafeNormal() * 3.0 * ACCEPTANCE_RADIUS);
-			FVector SecondaryMargin = (SecondaryComponentProjection.GetSafeNormal() * 3.0 * ACCEPTANCE_RADIUS);
-			FVector HitLocation;
-			bool bPrimaryHit = NavSys->NavigationRaycast(this, ControlledPawn->GetActorLocation(), PrimaryFirstWaypoint, HitLocation);
-			PrimaryFirstWaypoint = (bPrimaryHit) ? HitLocation - PrimaryMargin : PrimaryFirstWaypoint + PrimaryMargin;
-			bool bSecondaryHit = NavSys->NavigationRaycast(this, ControlledPawn->GetActorLocation(), SecondaryFirstWaypoint, HitLocation);
-			SecondaryFirstWaypoint = (bSecondaryHit) ? HitLocation - SecondaryMargin : SecondaryFirstWaypoint + SecondaryMargin;
-
-			NewOrthoWaypoint = (PrimaryComponentProjection.Size() > SecondaryComponentProjection.Size()) ? PrimaryFirstWaypoint : SecondaryFirstWaypoint;
-
-			NavPathToPrimaryWaypoint = NavSys->FindPathToLocationSynchronously(this->GetWorld(), ControlledPawn->GetActorLocation(), PrimaryFirstWaypoint);
-			NavPathFromPrimaryWaypoint = NavSys->FindPathToLocationSynchronously(this->GetWorld(), PrimaryFirstWaypoint, NavWaypoint.GetValue());
-
-			if (NavPathToPrimaryWaypoint && NavPathToPrimaryWaypoint->IsValid() && NavPathFromPrimaryWaypoint && NavPathFromPrimaryWaypoint->IsValid())
+			FVector Candidate;
+			float CandidateCost;
+			switch (i)
 			{
-				PrimaryFirstCost = NavPathToPrimaryWaypoint->GetPathLength() + NavPathFromPrimaryWaypoint->GetPathLength();
+			case 0: Candidate = PrimaryCandidate; break;
+			case 1: Candidate = SecondaryCandidate; break;
+			case 2: Candidate = AntiPrimaryCandidate; break;
+			case 3: Candidate = AntiSecondaryCandidate; break;
 			}
 
-			NavPathToSecondaryWaypoint = NavSys->FindPathToLocationSynchronously(this->GetWorld(), ControlledPawn->GetActorLocation(), SecondaryFirstWaypoint);
-			NavPathFromSecondaryWaypoint = NavSys->FindPathToLocationSynchronously(this->GetWorld(), SecondaryFirstWaypoint, NavWaypoint.GetValue());
-
-			if (NavPathToSecondaryWaypoint && NavPathToSecondaryWaypoint->IsValid() && NavPathFromSecondaryWaypoint && NavPathFromSecondaryWaypoint->IsValid())
+			bool bHitCandidate = NavSys->NavigationRaycast(GetWorld(), GetPawn()->GetActorLocation(), Candidate, HitLocation, nullptr);
+			if (!bHitCandidate)
 			{
-				SecondaryFirstCost = NavPathToSecondaryWaypoint->GetPathLength() + NavPathFromSecondaryWaypoint->GetPathLength();
+				NavSys->GetPathLength(Candidate, TargetLocation.GetValue(), CandidateCost);
+				switch (i)
+				{
+				case 0: PrimaryCost = CandidateCost; break;
+				case 1: SecondaryCost = CandidateCost; break;
+				case 2: AntiPrimaryCost = CandidateCost; break;
+				case 3: AntiSecondaryCost = CandidateCost; break;
+				}
 			}
-
-			if (ControlledPawn->GetVelocity().Size() > 0.01f)
+			else
 			{
-				NewOrthoWaypoint = (FMath::Abs(FVector::DotProduct(ControlledPawn->GetVelocity(), PrimaryAxis)) > FMath::Abs(FVector::DotProduct(ControlledPawn->GetVelocity(), SecondaryAxis))) ? PrimaryFirstWaypoint : SecondaryFirstWaypoint;
-				return NewOrthoWaypoint;
-			}
-			if (NavPathToPrimaryWaypoint->GetPathLength() > 0.0f && NavPathToSecondaryWaypoint->GetPathLength() > 0.0f)
-			{
-				NewOrthoWaypoint = (NavPathFromPrimaryWaypoint->GetPathLength() < NavPathFromSecondaryWaypoint->GetPathLength()) ? PrimaryFirstWaypoint : SecondaryFirstWaypoint;
+				NavSys->GetPathLength(HitLocation, TargetLocation.GetValue(), CandidateCost);
+				bool bHitTooClose = FVector::DistSquared(GetPawn()->GetActorLocation(), Candidate) < FMath::Square(ACCEPTANCE_RADIUS);
+				switch (i)
+				{
+				case 0: PrimaryCost = bHitTooClose ? MAX_FLT : CandidateCost; break;
+				case 1: SecondaryCost = bHitTooClose ? MAX_FLT : CandidateCost; break;
+				case 2: AntiPrimaryCost = bHitTooClose ? MAX_FLT : CandidateCost; break;
+				case 3: AntiSecondaryCost = bHitTooClose ? MAX_FLT : CandidateCost; break;
+				}
 			}
 		}
 
-		return NewOrthoWaypoint;
+		std::vector<float> Costs = { PrimaryCost, SecondaryCost, AntiPrimaryCost, AntiSecondaryCost };
+		std::vector<FVector> Candidates = { PrimaryCandidate, SecondaryCandidate, AntiPrimaryCandidate, AntiSecondaryCandidate };
+		int BestIndex = 0;
+		for (int i = 1; i < Costs.size(); i++)
+		{
+			if (Costs[i] < Costs[BestIndex])
+			{
+				BestIndex = i;
+			}
+		}
+		FVector BestCandidate = Candidates[BestIndex];
+
+		return BestCandidate;
 	}
 	else
 	{
 		return GetPawn()->GetActorLocation();
+
 	}
 }
 
@@ -235,11 +217,11 @@ void AADITLOIS_AIController::ScanForInteractables()
 			UE_LOG(LogTemp, Log, TEXT("AI: Found new target %s, moving."), *BestTarget->GetName());
 		}
 		
-		NavWaypoint = GetNavWaypoint(BestTarget->GetActorLocation());
-		OrthoNavWaypoint = (NavWaypoint.IsSet()) ? GetIdealWaypoint() : FVector::ZeroVector;
+		TargetLocation = BestTarget->GetActorLocation();
+		OrthoNavWaypoint = (TargetLocation.IsSet()) ? GetIdealWaypoint() : FVector::ZeroVector;
 		DrawDebugSphere(this->GetWorld(), OrthoNavWaypoint.GetValue(), 50.0f, 1.0, FColor::Blue, false, 10.0f);
 
-		MoveToLocation(OrthoNavWaypoint.GetValue(), ACCEPTANCE_RADIUS);
+		MoveToLocation(OrthoNavWaypoint.GetValue(), 1.0f);
 		
 	}
 	else
