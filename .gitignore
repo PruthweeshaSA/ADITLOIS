@@ -8,7 +8,7 @@ Binaries/*
 !Content/Splash/
 !Content/Logos/
 !Content/Assets/Levels/
-Content/StarterContent/**
+# Content/StarterContent/
 Intermediate/*
 Saved/*
 DerivedDataCache/*
