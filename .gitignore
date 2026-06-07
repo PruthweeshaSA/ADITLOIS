@@ -1,13 +1,14 @@
 Binaries/*
-Content/*
+# Content/*
+**/__ExternalActors__/**
+**/__ExternalObjects__/**
 !Content/Blueprints/
-!Content/Blueprints/**
-!Content/Assets/**
 !Content/Assets/
 !Content/Movies/
 !Content/Splash/
 !Content/Logos/
-# !Content/StarterContent
+!Content/Assets/Levels/
+Content/StarterContent/**
 Intermediate/*
 Saved/*
 DerivedDataCache/*

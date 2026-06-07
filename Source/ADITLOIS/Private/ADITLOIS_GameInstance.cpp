@@ -97,14 +97,14 @@ void UADITLOIS_GameInstance::OnSessionCreatedSuccess()
     UE_LOG(LogTemp, Log, TEXT("Session created successfully"));
 
     // Correct string: just path, no class prefix or suffix
-    FSoftObjectPath LevelPath(TEXT("/Game/Assets/Levels/UnrealsIdeaofAnEmptyLevel"));
+    FSoftObjectPath LevelPath(TEXT("/Game/Assets/Levels/FirstLevel"));
 
     // Load synchronously
     UObject *LoadedObject = LevelPath.TryLoad();
 
     if (LoadedObject)
     {
-        FString MapPath = LevelPath.GetLongPackageName(); // Returns "/Game/Assets/Levels/UnrealsIdeaofAnEmptyLevel"
+        FString MapPath = LevelPath.GetLongPackageName(); // Returns "/Game/Assets/Levels/FirstLevel"
         UE_LOG(LogTemp, Warning, TEXT("Level loaded. Opening: %s"), *MapPath);
 
         UGameplayStatics::OpenLevel(GetWorld(), FName(*MapPath), true, FString(TEXT("listen")));
