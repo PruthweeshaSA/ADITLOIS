@@ -46,7 +46,7 @@ private:
 
 	/** The time interval (in seconds) for scanning for interactable objects. */
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
-	float ScanInterval = 1.0f; // Check every 1 second
+	float ScanInterval = 0.2f; // Check every 1 second
 
 	/** The radius used for the sphere trace/overlap check. */
 	UPROPERTY(EditDefaultsOnly, Category = "AI")

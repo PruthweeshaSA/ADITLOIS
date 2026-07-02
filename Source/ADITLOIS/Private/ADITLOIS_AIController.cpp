@@ -133,12 +133,23 @@ FVector AADITLOIS_AIController::GetIdealWaypoint()
 			}
 		}
 
+		FVector PawnVelocity = ControlledPawn->GetVelocity();
+		int BestIndex = 0;
+		if (!PawnVelocity.IsNearlyZero())
+		{
+			FVector VelocityDir = PawnVelocity.GetSafeNormal();
+			float DotPrimary = FVector::DotProduct(VelocityDir, PrimaryComponent.GetSafeNormal());
+			float DotSecondary = FVector::DotProduct(VelocityDir, SecondaryComponent.GetSafeNormal());
+
+			BestIndex = (DotPrimary > 0.5) ? 0 : (DotSecondary > 0.5) ? 1 : (DotPrimary < -0.5) ? 2 : 3;
+		}
+
 		std::vector<float> Costs = { PrimaryCost, SecondaryCost, AntiPrimaryCost, AntiSecondaryCost };
 		std::vector<FVector> Candidates = { PrimaryCandidate, SecondaryCandidate, AntiPrimaryCandidate, AntiSecondaryCandidate };
-		int BestIndex = 0;
-		for (int i = 1; i < Costs.size(); i++)
+
+		for (int i = 0; i < Costs.size(); i++)
 		{
-			if (Costs[i] < Costs[BestIndex])
+			if (Costs[i] < Costs[BestIndex] - 100.0f)
 			{
 				BestIndex = i;
 			}
