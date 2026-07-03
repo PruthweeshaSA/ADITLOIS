@@ -23,7 +23,6 @@ void AADITLOIS_AIController::BeginPlay()
 	Super::BeginPlay();
 	UE_LOG(LogTemp, Log, TEXT("AI Controller BeginPlay called."));
 	gameState = Cast<AADITLOIS_GameState>(GetWorld()->GetGameState());
-	
 }
 
 void AADITLOIS_AIController::OnPossess(APawn *aPawn)
@@ -81,7 +80,6 @@ FVector AADITLOIS_AIController::GetIdealWaypoint()
 		FVector PrimaryComponent = ToNav.ProjectOnTo(PrimaryAxis);
 		FVector SecondaryComponent = ToNav.ProjectOnTo(SecondaryAxis);
 
-
 		FVector PrimaryCandidate = PrimaryComponent.GetSafeNormal() * (200.0f * ACCEPTANCE_RADIUS) + GetPawn()->GetActorLocation();
 		FVector SecondaryCandidate = SecondaryComponent.GetSafeNormal() * (200.0f * ACCEPTANCE_RADIUS) + GetPawn()->GetActorLocation();
 		FVector AntiPrimaryCandidate = -PrimaryComponent.GetSafeNormal() * (200.0f * ACCEPTANCE_RADIUS) + GetPawn()->GetActorLocation();
@@ -92,8 +90,6 @@ FVector AADITLOIS_AIController::GetIdealWaypoint()
 		float AntiPrimaryCost = 0.0f;
 		float AntiSecondaryCost = 0.0f;
 
-
-
 		FVector HitLocation;
 		for (int i = 0; i < 4; i++)
 		{
@@ -101,10 +97,18 @@ FVector AADITLOIS_AIController::GetIdealWaypoint()
 			float CandidateCost;
 			switch (i)
 			{
-			case 0: Candidate = PrimaryCandidate; break;
-			case 1: Candidate = SecondaryCandidate; break;
-			case 2: Candidate = AntiPrimaryCandidate; break;
-			case 3: Candidate = AntiSecondaryCandidate; break;
+			case 0:
+				Candidate = PrimaryCandidate;
+				break;
+			case 1:
+				Candidate = SecondaryCandidate;
+				break;
+			case 2:
+				Candidate = AntiPrimaryCandidate;
+				break;
+			case 3:
+				Candidate = AntiSecondaryCandidate;
+				break;
 			}
 
 			bool bHitCandidate = NavSys->NavigationRaycast(GetWorld(), GetPawn()->GetActorLocation(), Candidate, HitLocation, nullptr);
@@ -113,10 +117,18 @@ FVector AADITLOIS_AIController::GetIdealWaypoint()
 				NavSys->GetPathLength(Candidate, TargetLocation.GetValue(), CandidateCost);
 				switch (i)
 				{
-				case 0: PrimaryCost = CandidateCost; break;
-				case 1: SecondaryCost = CandidateCost; break;
-				case 2: AntiPrimaryCost = CandidateCost; break;
-				case 3: AntiSecondaryCost = CandidateCost; break;
+				case 0:
+					PrimaryCost = CandidateCost;
+					break;
+				case 1:
+					SecondaryCost = CandidateCost;
+					break;
+				case 2:
+					AntiPrimaryCost = CandidateCost;
+					break;
+				case 3:
+					AntiSecondaryCost = CandidateCost;
+					break;
 				}
 			}
 			else
@@ -125,10 +137,18 @@ FVector AADITLOIS_AIController::GetIdealWaypoint()
 				bool bHitTooClose = FVector::DistSquared(GetPawn()->GetActorLocation(), Candidate) < FMath::Square(ACCEPTANCE_RADIUS);
 				switch (i)
 				{
-				case 0: PrimaryCost = bHitTooClose ? MAX_FLT : CandidateCost; break;
-				case 1: SecondaryCost = bHitTooClose ? MAX_FLT : CandidateCost; break;
-				case 2: AntiPrimaryCost = bHitTooClose ? MAX_FLT : CandidateCost; break;
-				case 3: AntiSecondaryCost = bHitTooClose ? MAX_FLT : CandidateCost; break;
+				case 0:
+					PrimaryCost = bHitTooClose ? MAX_FLT : CandidateCost;
+					break;
+				case 1:
+					SecondaryCost = bHitTooClose ? MAX_FLT : CandidateCost;
+					break;
+				case 2:
+					AntiPrimaryCost = bHitTooClose ? MAX_FLT : CandidateCost;
+					break;
+				case 3:
+					AntiSecondaryCost = bHitTooClose ? MAX_FLT : CandidateCost;
+					break;
 				}
 			}
 		}
@@ -141,11 +161,13 @@ FVector AADITLOIS_AIController::GetIdealWaypoint()
 			float DotPrimary = FVector::DotProduct(VelocityDir, PrimaryComponent.GetSafeNormal());
 			float DotSecondary = FVector::DotProduct(VelocityDir, SecondaryComponent.GetSafeNormal());
 
-			BestIndex = (DotPrimary > 0.5) ? 0 : (DotSecondary > 0.5) ? 1 : (DotPrimary < -0.5) ? 2 : 3;
+			BestIndex = (DotPrimary > 0.5) ? 0 : (DotSecondary > 0.5) ? 1
+											 : (DotPrimary < -0.5)	  ? 2
+																	  : 3;
 		}
 
-		std::vector<float> Costs = { PrimaryCost, SecondaryCost, AntiPrimaryCost, AntiSecondaryCost };
-		std::vector<FVector> Candidates = { PrimaryCandidate, SecondaryCandidate, AntiPrimaryCandidate, AntiSecondaryCandidate };
+		std::vector<float> Costs = {PrimaryCost, SecondaryCost, AntiPrimaryCost, AntiSecondaryCost};
+		std::vector<FVector> Candidates = {PrimaryCandidate, SecondaryCandidate, AntiPrimaryCandidate, AntiSecondaryCandidate};
 
 		for (int i = 0; i < Costs.size(); i++)
 		{
@@ -161,7 +183,6 @@ FVector AADITLOIS_AIController::GetIdealWaypoint()
 	else
 	{
 		return GetPawn()->GetActorLocation();
-
 	}
 }
 
@@ -227,13 +248,12 @@ void AADITLOIS_AIController::ScanForInteractables()
 			CurrentTargetActor = BestTarget;
 			UE_LOG(LogTemp, Log, TEXT("AI: Found new target %s, moving."), *BestTarget->GetName());
 		}
-		
+
 		TargetLocation = BestTarget->GetActorLocation();
 		OrthoNavWaypoint = (TargetLocation.IsSet()) ? GetIdealWaypoint() : FVector::ZeroVector;
 		DrawDebugSphere(this->GetWorld(), OrthoNavWaypoint.GetValue(), 50.0f, 1.0, FColor::Blue, false, 10.0f);
 
 		MoveToLocation(OrthoNavWaypoint.GetValue(), 1.0f);
-		
 	}
 	else
 	{

@@ -33,16 +33,14 @@ private:
 	APawn *ControlledPawn;
 
 	TOptional<FVector> TargetLocation;
-    TOptional<FVector> OrthoNavWaypoint;
+	TOptional<FVector> OrthoNavWaypoint;
 
 	float ACCEPTANCE_RADIUS = 1.0f;
 
 	double LastScannedTimestamp = 0.0;
 
-
-
 	UPROPERTY()
-    AActor* CurrentTargetActor;
+	AActor *CurrentTargetActor;
 
 	/** The time interval (in seconds) for scanning for interactable objects. */
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
@@ -62,14 +60,13 @@ private:
 
 	UFUNCTION(BlueprintCallable)
 	virtual void OnPossess(APawn *aPawn) override;
-	
-    FVector GetIdealWaypoint();
 
-    virtual void OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult &Result) override;
+	FVector GetIdealWaypoint();
+
+	virtual void OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult &Result) override;
 
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<AADITLOIS_GameState> gameState = nullptr;
-
 };
