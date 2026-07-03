@@ -67,6 +67,8 @@ private:
 
 	virtual void Tick(float DeltaTime) override;
 
+	float GetPathManhattanDistance(UNavigationPath *NavPath, FVector PrimaryAxis);
+
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<AADITLOIS_GameState> gameState = nullptr;
 };

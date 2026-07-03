@@ -61,6 +61,32 @@ void AADITLOIS_AIController::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+float AADITLOIS_AIController::GetPathManhattanDistance(UNavigationPath *NavPath, FVector PrimaryAxis)
+{
+	if (!NavPath || NavPath->PathPoints.Num() < 2)
+	{
+		return 0.0f;
+	}
+
+	float TotalDistance = 0.0f;
+	const TArray<FVector> &PathPoints = NavPath->PathPoints;
+
+	for (int32 i = 1; i < PathPoints.Num(); ++i)
+	{
+		FVector PreviousPoint = PathPoints[i - 1];
+		FVector CurrentPoint = PathPoints[i];
+
+		float AngleFromBasis = FMath::Acos(FVector::DotProduct((CurrentPoint - PreviousPoint).GetSafeNormal(), PrimaryAxis.GetSafeNormal()));
+
+		// Calculate Manhattan distance between the two points
+		float SegmentDistance = (CurrentPoint - PreviousPoint).Size() * (FMath::Abs(FMath::Cos(AngleFromBasis)) + FMath::Abs(FMath::Sin(AngleFromBasis)));
+
+		TotalDistance += SegmentDistance;
+	}
+
+	return TotalDistance;
+}
+
 FVector AADITLOIS_AIController::GetIdealWaypoint()
 {
 	if (!ControlledPawn)
@@ -111,10 +137,11 @@ FVector AADITLOIS_AIController::GetIdealWaypoint()
 				break;
 			}
 
-			bool bHitCandidate = NavSys->NavigationRaycast(GetWorld(), GetPawn()->GetActorLocation(), Candidate, HitLocation, nullptr);
+						bool bHitCandidate = NavSys->NavigationRaycast(GetWorld(), GetPawn()->GetActorLocation(), Candidate, HitLocation, nullptr);
 			if (!bHitCandidate)
 			{
-				NavSys->GetPathLength(Candidate, TargetLocation.GetValue(), CandidateCost);
+				UNavigationPath *NavPath = NavSys->FindPathToLocationSynchronously(GetWorld(), Candidate, TargetLocation.GetValue());
+				CandidateCost = GetPathManhattanDistance(NavPath, PrimaryAxis);
 				switch (i)
 				{
 				case 0:
@@ -133,7 +160,10 @@ FVector AADITLOIS_AIController::GetIdealWaypoint()
 			}
 			else
 			{
-				NavSys->GetPathLength(HitLocation, TargetLocation.GetValue(), CandidateCost);
+				FVector PawnLocation = GetPawn()->GetActorLocation();
+				Candidate = PawnLocation + (HitLocation - PawnLocation).GetSafeNormal().ProjectOnTo(Candidate-PawnLocation);
+				UNavigationPath *NavPath = NavSys->FindPathToLocationSynchronously(GetWorld(), Candidate, TargetLocation.GetValue());
+				CandidateCost = GetPathManhattanDistance(NavPath, PrimaryAxis);
 				bool bHitTooClose = FVector::DistSquared(GetPawn()->GetActorLocation(), Candidate) < FMath::Square(ACCEPTANCE_RADIUS);
 				switch (i)
 				{
@@ -171,7 +201,7 @@ FVector AADITLOIS_AIController::GetIdealWaypoint()
 
 		for (int i = 0; i < Costs.size(); i++)
 		{
-			if (Costs[i] < Costs[BestIndex] - 100.0f)
+			if (Costs[i] < Costs[BestIndex] * 0.98f)
 			{
 				BestIndex = i;
 			}
@@ -258,18 +288,6 @@ void AADITLOIS_AIController::ScanForInteractables()
 	else
 	{
 		CurrentTargetActor = nullptr;
-
-		// 3. If no target and NOT moving, find a random point
-		if (GetMoveStatus() == EPathFollowingStatus::Idle)
-		{
-			FNavLocation RandomLocation;
-			UNavigationSystemV1 *NavSystem = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
-			if (NavSystem && NavSystem->GetRandomPointInNavigableRadius(CurrentLocation, ScanRadius, RandomLocation))
-			{
-				MoveToLocation(RandomLocation.Location);
-				UE_LOG(LogTemp, Log, TEXT("AI: Roaming to random location."));
-			}
-		}
 	}
 }
 
