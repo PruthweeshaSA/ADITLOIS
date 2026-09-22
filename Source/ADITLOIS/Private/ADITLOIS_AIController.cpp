@@ -99,6 +99,7 @@ FVector AADITLOIS_AIController::GetIdealWaypoint()
 
 	FVector PrimaryAxis = FVector(1.0, 0.0, 0.0);
 	FVector SecondaryAxis = FVector(0.0, 1.0, 0);
+	float Stride = 150.0f;
 
 	if (TargetLocation.IsSet())
 	{
@@ -106,10 +107,10 @@ FVector AADITLOIS_AIController::GetIdealWaypoint()
 		FVector PrimaryComponent = ToNav.ProjectOnTo(PrimaryAxis);
 		FVector SecondaryComponent = ToNav.ProjectOnTo(SecondaryAxis);
 
-		FVector PrimaryCandidate = PrimaryComponent.GetSafeNormal() * (200.0f * ACCEPTANCE_RADIUS) + GetPawn()->GetActorLocation();
-		FVector SecondaryCandidate = SecondaryComponent.GetSafeNormal() * (200.0f * ACCEPTANCE_RADIUS) + GetPawn()->GetActorLocation();
-		FVector AntiPrimaryCandidate = -PrimaryComponent.GetSafeNormal() * (200.0f * ACCEPTANCE_RADIUS) + GetPawn()->GetActorLocation();
-		FVector AntiSecondaryCandidate = -SecondaryComponent.GetSafeNormal() * (200.0f * ACCEPTANCE_RADIUS) + GetPawn()->GetActorLocation();
+		FVector PrimaryCandidate = PrimaryComponent.GetSafeNormal() * Stride + GetPawn()->GetActorLocation();
+		FVector SecondaryCandidate = SecondaryComponent.GetSafeNormal() * Stride + GetPawn()->GetActorLocation();
+		FVector AntiPrimaryCandidate = -PrimaryComponent.GetSafeNormal() * Stride + GetPawn()->GetActorLocation();
+		FVector AntiSecondaryCandidate = -SecondaryComponent.GetSafeNormal() * Stride + GetPawn()->GetActorLocation();
 
 		float PrimaryCost = 0.0f;
 		float SecondaryCost = 0.0f;
@@ -137,7 +138,7 @@ FVector AADITLOIS_AIController::GetIdealWaypoint()
 				break;
 			}
 
-						bool bHitCandidate = NavSys->NavigationRaycast(GetWorld(), GetPawn()->GetActorLocation(), Candidate, HitLocation, nullptr);
+			bool bHitCandidate = NavSys->NavigationRaycast(GetWorld(), GetPawn()->GetActorLocation(), Candidate, HitLocation, nullptr);
 			if (!bHitCandidate)
 			{
 				UNavigationPath *NavPath = NavSys->FindPathToLocationSynchronously(GetWorld(), Candidate, TargetLocation.GetValue());
@@ -161,7 +162,7 @@ FVector AADITLOIS_AIController::GetIdealWaypoint()
 			else
 			{
 				FVector PawnLocation = GetPawn()->GetActorLocation();
-				Candidate = PawnLocation + (HitLocation - PawnLocation).GetSafeNormal().ProjectOnTo(Candidate-PawnLocation);
+				Candidate = PawnLocation + (HitLocation - PawnLocation).GetSafeNormal().ProjectOnTo(Candidate - PawnLocation);
 				UNavigationPath *NavPath = NavSys->FindPathToLocationSynchronously(GetWorld(), Candidate, TargetLocation.GetValue());
 				CandidateCost = GetPathManhattanDistance(NavPath, PrimaryAxis);
 				bool bHitTooClose = FVector::DistSquared(GetPawn()->GetActorLocation(), Candidate) < FMath::Square(ACCEPTANCE_RADIUS);
@@ -184,8 +185,11 @@ FVector AADITLOIS_AIController::GetIdealWaypoint()
 		}
 
 		FVector PawnVelocity = ControlledPawn->GetVelocity();
+		FVector PawnLocation = ControlledPawn->GetActorLocation();
+
+		bool PathBlocked = NavSys->NavigationRaycast(GetWorld(), PawnLocation, PawnLocation + (Stride * PawnVelocity.GetSafeNormal()), HitLocation, nullptr);
 		int BestIndex = 0;
-		if (!PawnVelocity.IsNearlyZero())
+		if (!PawnVelocity.IsNearlyZero() && !PathBlocked)
 		{
 			FVector VelocityDir = PawnVelocity.GetSafeNormal();
 			float DotPrimary = FVector::DotProduct(VelocityDir, PrimaryComponent.GetSafeNormal());
@@ -201,7 +205,7 @@ FVector AADITLOIS_AIController::GetIdealWaypoint()
 
 		for (int i = 0; i < Costs.size(); i++)
 		{
-			if (Costs[i] < Costs[BestIndex] * 0.98f)
+			if (Costs[i] < Costs[BestIndex] - Stride)
 			{
 				BestIndex = i;
 			}
