@@ -61,27 +61,48 @@ void AADITLOIS_AIController::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-float AADITLOIS_AIController::GetPathManhattanDistance(UNavigationPath *NavPath, FVector PrimaryAxis)
+float AADITLOIS_AIController::GetPathManhattanDistance(UNavigationPath *NavPath, FVector PrimaryAxis, FVector TargetLoc)
 {
 	if (!NavPath || NavPath->PathPoints.Num() < 2)
 	{
-		return FMath::RandRange(0.0f, 1.0f); // Return a random distance if the path is invalid or has less than 2 points
+		return MAX_FLT; // Return a massive distance if the path is invalid
 	}
 
 	float TotalDistance = 0.0f;
 	const TArray<FVector> &PathPoints = NavPath->PathPoints;
+	FVector SafePrimaryAxis = PrimaryAxis.GetSafeNormal();
 
 	for (int32 i = 1; i < PathPoints.Num(); ++i)
 	{
 		FVector PreviousPoint = PathPoints[i - 1];
 		FVector CurrentPoint = PathPoints[i];
 
-		float AngleFromBasis = FMath::Acos(FVector::DotProduct((CurrentPoint - PreviousPoint).GetSafeNormal(), PrimaryAxis.GetSafeNormal()));
+		FVector SegmentDir = (CurrentPoint - PreviousPoint).GetSafeNormal();
+		
+		// Clamp to avoid NaN issues with Acos from floating point imprecision in DotProduct
+		float DotProd = FMath::Clamp(FVector::DotProduct(SegmentDir, SafePrimaryAxis), -1.0f, 1.0f);
+		float AngleFromBasis = FMath::Acos(DotProd);
 
-		// Calculate Manhattan distance between the two points
+		// Calculate Manhattan distance in the specific basis between the two points
 		float SegmentDistance = (CurrentPoint - PreviousPoint).Size() * (FMath::Abs(FMath::Cos(AngleFromBasis)) + FMath::Abs(FMath::Sin(AngleFromBasis)));
 
 		TotalDistance += SegmentDistance;
+	}
+
+	if (NavPath->IsPartial())
+	{
+		// Severely penalize partial paths based on how far they are from the target
+		FVector UnreachedDelta = TargetLoc - PathPoints.Last();
+		float UnreachedSize = UnreachedDelta.Size();
+		if (UnreachedSize > 0.0f)
+		{
+			FVector UnreachedDir = UnreachedDelta.GetSafeNormal();
+			float UnreachedDot = FMath::Clamp(FVector::DotProduct(UnreachedDir, SafePrimaryAxis), -1.0f, 1.0f);
+			float AngleFromBasis = FMath::Acos(UnreachedDot);
+			float UnreachedManhattan = UnreachedSize * (FMath::Abs(FMath::Cos(AngleFromBasis)) + FMath::Abs(FMath::Sin(AngleFromBasis)));
+			
+			TotalDistance += UnreachedManhattan * 100.0f; 
+		}
 	}
 
 	return TotalDistance;
@@ -128,7 +149,7 @@ FVector AADITLOIS_AIController::GetIdealWaypoint()
 			if (!bHitCandidate)
 			{
 				UNavigationPath *NavPath = NavSys->FindPathToLocationSynchronously(GetWorld(), Candidates[i], TargetLocation.GetValue());
-				CandidateCosts[i] = GetPathManhattanDistance(NavPath, PrimaryAxis);
+				CandidateCosts[i] = GetPathManhattanDistance(NavPath, PrimaryAxis, TargetLocation.GetValue());
 				if (PawnVelocity.Size() > 0.0f)
 				{
 					FVector ToCandidate = Candidates[i] - PawnLocation;
