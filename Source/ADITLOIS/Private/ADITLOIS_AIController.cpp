@@ -65,7 +65,7 @@ float AADITLOIS_AIController::GetPathManhattanDistance(UNavigationPath *NavPath,
 {
 	if (!NavPath || NavPath->PathPoints.Num() < 2)
 	{
-		return 0.0f;
+		return FMath::RandRange(0.0f, 1.0f); // Return a random distance if the path is invalid or has less than 2 points
 	}
 
 	float TotalDistance = 0.0f;
@@ -99,119 +99,72 @@ FVector AADITLOIS_AIController::GetIdealWaypoint()
 
 	FVector PrimaryAxis = FVector(1.0, 0.0, 0.0);
 	FVector SecondaryAxis = FVector(0.0, 1.0, 0);
-	float Stride = 150.0f;
+	float Stride = 100.0f;
 
 	if (TargetLocation.IsSet())
 	{
 		FVector ToNav = TargetLocation.GetValue() - GetPawn()->GetActorLocation();
-		FVector PrimaryComponent = ToNav.ProjectOnTo(PrimaryAxis);
-		FVector SecondaryComponent = ToNav.ProjectOnTo(SecondaryAxis);
 
-		FVector PrimaryCandidate = PrimaryComponent.GetSafeNormal() * Stride + GetPawn()->GetActorLocation();
-		FVector SecondaryCandidate = SecondaryComponent.GetSafeNormal() * Stride + GetPawn()->GetActorLocation();
-		FVector AntiPrimaryCandidate = -PrimaryComponent.GetSafeNormal() * Stride + GetPawn()->GetActorLocation();
-		FVector AntiSecondaryCandidate = -SecondaryComponent.GetSafeNormal() * Stride + GetPawn()->GetActorLocation();
+		FVector PrimaryCandidate = PrimaryAxis.GetSafeNormal() * Stride + GetPawn()->GetActorLocation();
+		FVector SecondaryCandidate = SecondaryAxis.GetSafeNormal() * Stride + GetPawn()->GetActorLocation();
+		FVector AntiPrimaryCandidate = -PrimaryAxis.GetSafeNormal() * Stride + GetPawn()->GetActorLocation();
+		FVector AntiSecondaryCandidate = -SecondaryAxis.GetSafeNormal() * Stride + GetPawn()->GetActorLocation();
 
 		float PrimaryCost = 0.0f;
 		float SecondaryCost = 0.0f;
 		float AntiPrimaryCost = 0.0f;
 		float AntiSecondaryCost = 0.0f;
 
+		FVector Candidates[4] = {PrimaryCandidate, SecondaryCandidate, AntiPrimaryCandidate, AntiSecondaryCandidate};
+		float CandidateCosts[4] = {PrimaryCost, SecondaryCost, AntiPrimaryCost, AntiSecondaryCost};
+		FVector PawnVelocity = ControlledPawn->GetVelocity();
+		FVector PawnLocation = ControlledPawn->GetActorLocation();
+		int BestIndex = 0;
+
 		FVector HitLocation;
 		for (int i = 0; i < 4; i++)
 		{
-			FVector Candidate;
-			float CandidateCost;
-			switch (i)
-			{
-			case 0:
-				Candidate = PrimaryCandidate;
-				break;
-			case 1:
-				Candidate = SecondaryCandidate;
-				break;
-			case 2:
-				Candidate = AntiPrimaryCandidate;
-				break;
-			case 3:
-				Candidate = AntiSecondaryCandidate;
-				break;
-			}
-
-			bool bHitCandidate = NavSys->NavigationRaycast(GetWorld(), GetPawn()->GetActorLocation(), Candidate, HitLocation, nullptr);
+			bool bHitCandidate = NavSys->NavigationRaycast(GetWorld(), PawnLocation, Candidates[i], HitLocation, nullptr);
 			if (!bHitCandidate)
 			{
-				UNavigationPath *NavPath = NavSys->FindPathToLocationSynchronously(GetWorld(), Candidate, TargetLocation.GetValue());
-				CandidateCost = GetPathManhattanDistance(NavPath, PrimaryAxis);
-				switch (i)
+				UNavigationPath *NavPath = NavSys->FindPathToLocationSynchronously(GetWorld(), Candidates[i], TargetLocation.GetValue());
+				CandidateCosts[i] = GetPathManhattanDistance(NavPath, PrimaryAxis);
+				if (PawnVelocity.Size() > 0.0f)
 				{
-				case 0:
-					PrimaryCost = CandidateCost;
-					break;
-				case 1:
-					SecondaryCost = CandidateCost;
-					break;
-				case 2:
-					AntiPrimaryCost = CandidateCost;
-					break;
-				case 3:
-					AntiSecondaryCost = CandidateCost;
-					break;
+					FVector ToCandidate = Candidates[i] - PawnLocation;
+					float CosineSimilarity = FVector::DotProduct(ToCandidate.GetSafeNormal(), PawnVelocity.GetSafeNormal());
+					if (CosineSimilarity > FMath::Sqrt(0.5f)) // 45 degrees threshold
+					{
+						CandidateCosts[i] -= Stride * 0.5f; // Favor candidates in the direction of movement
+					}
+					else if (CosineSimilarity < -FMath::Sqrt(0.5f)) // 45 degrees threshold
+					{
+						CandidateCosts[i] += Stride * 0.5f; // Penalize candidates against the direction of movement
+					}
+				}
+				else
+				{
+					CandidateCosts[i] += Stride * 0.5f; // Penalize candidates if the pawn is stationary
 				}
 			}
 			else
 			{
-				FVector PawnLocation = GetPawn()->GetActorLocation();
-				Candidate = PawnLocation + (HitLocation - PawnLocation).GetSafeNormal().ProjectOnTo(Candidate - PawnLocation);
-				UNavigationPath *NavPath = NavSys->FindPathToLocationSynchronously(GetWorld(), Candidate, TargetLocation.GetValue());
-				CandidateCost = GetPathManhattanDistance(NavPath, PrimaryAxis);
-				bool bHitTooClose = FVector::DistSquared(GetPawn()->GetActorLocation(), Candidate) < FMath::Square(ACCEPTANCE_RADIUS);
-				switch (i)
-				{
-				case 0:
-					PrimaryCost = bHitTooClose ? MAX_FLT : CandidateCost;
-					break;
-				case 1:
-					SecondaryCost = bHitTooClose ? MAX_FLT : CandidateCost;
-					break;
-				case 2:
-					AntiPrimaryCost = bHitTooClose ? MAX_FLT : CandidateCost;
-					break;
-				case 3:
-					AntiSecondaryCost = bHitTooClose ? MAX_FLT : CandidateCost;
-					break;
-				}
+				CandidateCosts[i] = MAX_FLT;
 			}
-		}
 
-		FVector PawnVelocity = ControlledPawn->GetVelocity();
-		FVector PawnLocation = ControlledPawn->GetActorLocation();
-
-		bool PathBlocked = NavSys->NavigationRaycast(GetWorld(), PawnLocation, PawnLocation + (Stride * PawnVelocity.GetSafeNormal()), HitLocation, nullptr);
-		int BestIndex = 0;
-		if (!PawnVelocity.IsNearlyZero() && !PathBlocked)
-		{
-			FVector VelocityDir = PawnVelocity.GetSafeNormal();
-			float DotPrimary = FVector::DotProduct(VelocityDir, PrimaryComponent.GetSafeNormal());
-			float DotSecondary = FVector::DotProduct(VelocityDir, SecondaryComponent.GetSafeNormal());
-
-			BestIndex = (DotPrimary > 0.5) ? 0 : (DotSecondary > 0.5) ? 1
-											 : (DotPrimary < -0.5)	  ? 2
-																	  : 3;
-		}
-
-		std::vector<float> Costs = {PrimaryCost, SecondaryCost, AntiPrimaryCost, AntiSecondaryCost};
-		std::vector<FVector> Candidates = {PrimaryCandidate, SecondaryCandidate, AntiPrimaryCandidate, AntiSecondaryCandidate};
-
-		for (int i = 0; i < Costs.size(); i++)
-		{
-			if (Costs[i] < Costs[BestIndex] - Stride)
+			if (CandidateCosts[i] < CandidateCosts[BestIndex])
 			{
 				BestIndex = i;
 			}
-		}
-		FVector BestCandidate = Candidates[BestIndex];
 
+			if (GEngine)
+			{
+				FString DebugMsg = FString::Printf(TEXT("Candidate %d: Cost = %.2f, Location = %s"), i, CandidateCosts[i], *Candidates[i].ToString());
+				GEngine->AddOnScreenDebugMessage(i, 5.f, FColor::Green, DebugMsg);
+			}
+		}
+
+		FVector BestCandidate = Candidates[BestIndex];
 		return BestCandidate;
 	}
 	else
